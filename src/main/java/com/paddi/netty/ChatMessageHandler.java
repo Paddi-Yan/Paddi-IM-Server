@@ -1,9 +1,9 @@
 package com.paddi.netty;
 
 import com.google.gson.Gson;
-import com.paddi.message.AbstractMessage;
+import com.paddi.common.FrameType;
 import com.paddi.message.Frame;
-import com.paddi.message.PrivateChatMessage;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
@@ -35,15 +35,25 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
                                 + "接收到消息: " + msg.text()));
         LocalDateTime sendTime = LocalDateTime.now();
         String content = frame.getContent();
-        String senderId = frame.getSenderId();
-        if(AbstractMessage.PRIVATE_MESSAGE == frame.getType().intValue()) {
-            //私聊
-            PrivateChatMessage message = new PrivateChatMessage();
-
-        } else if(AbstractMessage.GROUP_MESSAGE == frame.getType().intValue()) {
-            //群聊
-        }else  {
-
+        Long senderId = frame.getSenderId();
+        Channel channel = ctx.channel();
+        if(FrameType.CONNECT.type.equals(frame.getType())) {
+            //连接请求
+            boolean result = UserChannelManager.put(senderId, channel);
+            if(result == true) {
+                ChatMessageHandler.log.info("ID为{}的用户连接成功->{}", senderId, channel);
+            }else {
+                ChatMessageHandler.log.warn("ID为{}的用户连接失败->{}", senderId);
+            }
+        } else if(FrameType.PRIVATE_CHAT.type.equals(frame.getType())) {
+            //私聊消息
+        } else if(FrameType.GROUP_CHAT.type.equals(frame.getType())) {
+            //群聊消息
+        } else if(FrameType.KEEPALIVE.type.equals(frame.getType())) {
+            //心跳包
+        } else if(FrameType.CLOSE.type.equals(frame.getType())) {
+            //关闭连接
+            UserChannelManager.remove(senderId);
         }
     }
 

@@ -17,11 +17,15 @@ import java.io.Serializable;
 @NoArgsConstructor
 @ToString
 public class Frame implements Serializable {
-    private String senderId;
+    private static final long serialVersionUID = 3250130767066001523L;
+
+    private Long senderId;
 
     private String content;
 
-    private String receiverId;
+    private Long receiverId;
 
     private Integer type;
+
+    private Object extend;
 }

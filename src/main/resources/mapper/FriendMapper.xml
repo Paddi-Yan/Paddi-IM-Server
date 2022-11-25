@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.paddi.mapper.FriendMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.paddi.entity.Friend">
+        <id column="id" property="id" />
+        <result column="user_id" property="userId" />
+        <result column="friend_id" property="friendId" />
+    </resultMap>
+
+    <select id="searchByUserId" resultMap="BaseResultMap" >
+        select friend_id as friend_id from sys_friend where user_id = ${userId} union all select user_id as friend_id from sys_friend where friend_id = ${userId};
+    </select>
+
+</mapper>

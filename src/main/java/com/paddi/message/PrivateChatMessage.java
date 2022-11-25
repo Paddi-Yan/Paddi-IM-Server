@@ -18,7 +18,9 @@ import java.time.LocalDateTime;
 @ToString(callSuper = true)
 public class PrivateChatMessage extends AbstractMessage {
 
-    private String senderId;
+    private static final long serialVersionUID = 7235415216025984925L;
+
+    private Long senderId;
 
     private String senderName;
 
@@ -26,9 +28,11 @@ public class PrivateChatMessage extends AbstractMessage {
 
     private LocalDateTime sendTime;
 
-    private String receiverId;
+    private Long receiverId;
 
     private String receiverName;
+
+    private boolean flag;
 
     @Override
     public int getMessageType() {

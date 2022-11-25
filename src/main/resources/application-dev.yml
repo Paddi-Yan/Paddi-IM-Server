@@ -1,0 +1,37 @@
+server:
+  port: 8080
+spring:
+  #Swagger
+  swagger2:
+    enabled: true
+  application:
+    name: Paddi-IM-Server
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    url: jdbc:mysql://localhost:3306/im_server?serverTimezone=UTC
+    username: root
+    password: 123456
+  redis:
+    port: 6379
+    host: localhost
+    database: 0
+    password: airenpA1
+    jedis:
+      pool:
+        max-active: 8
+        max-wait: -1ms
+        max-idle: 8
+        min-idle: 0
+    timeout: 5000ms
+#MyBatis
+mybatis-plus:
+  type-aliases-package: com.paddi.entity
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  type-enums-package: com.paddi.common

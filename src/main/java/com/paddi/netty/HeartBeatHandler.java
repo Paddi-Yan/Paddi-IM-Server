@@ -1,5 +1,6 @@
 package com.paddi.netty;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleState;
@@ -24,7 +25,9 @@ public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
             } else if(event.state() == IdleState.ALL_IDLE) {
                 HeartBeatHandler.log.info("进入了读写空闲,即将关闭连接....");
                 HeartBeatHandler.log.info("关闭连接前,当前连接数为：{}",ChatMessageHandler.clients.size());
-                ctx.channel().close();
+                Channel channel = ctx.channel();
+                UserChannelManager.remove(channel);
+                channel.close();
                 HeartBeatHandler.log.info("关闭连接后,当前连接数为：{}",ChatMessageHandler.clients.size());
             }
         }
