@@ -6,12 +6,14 @@ import com.paddi.entity.vo.UserVo;
 import com.paddi.mapper.FriendMapper;
 import com.paddi.mapper.UserMapper;
 import com.paddi.service.FriendService;
+import com.paddi.service.UserService;
 import com.paddi.utils.mapstruct.UserMapStruct;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @SpringBootTest
 class PaddiImServerApplicationTests {
@@ -28,9 +30,9 @@ class PaddiImServerApplicationTests {
     @Test
     void contextLoads() {
         User user = User.builder()
-                         .username("Miko")
+                         .username("Paddi-Yan")
                          .password("123456")
-                         .gender(GenderEnum.MALE)
+                         .gender(GenderEnum.FEMALE)
                          .registerTime(LocalDateTime.now())
                          .build();
         userMapper.insert(user);
@@ -41,10 +43,17 @@ class PaddiImServerApplicationTests {
 
     @Test
     void friendTest() {
-        User user = friendService.searchFriend("Miko", 1596081816133148674L);
-        System.out.println(user);
-        System.out.println("===========================================");
-        friendMapper.searchByUserId(1596081816133148674L).forEach(System.out :: println);
+        List<User> userList = friendService.searchFriend("sdaf", 1596190150966370306L);
+        userList.forEach(System.out :: println);
+
+    }
+
+    @Resource
+    private UserService userService;
+    @Test
+    void searchUserTest() {
+        List<Long> userId = friendMapper.searchByUserId(1596081816133148674L);
+        userId.forEach(System.out :: println);
     }
 
 }

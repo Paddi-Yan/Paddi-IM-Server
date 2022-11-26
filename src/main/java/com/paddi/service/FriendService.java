@@ -3,6 +3,9 @@ package com.paddi.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.paddi.entity.Friend;
 import com.paddi.entity.User;
+import com.paddi.entity.vo.UserVo;
+
+import java.util.List;
 
 /**
  * <p>
@@ -14,5 +17,9 @@ import com.paddi.entity.User;
  */
 public interface FriendService extends IService<Friend> {
 
-    User searchFriend(String searchName, Long userId);
+    List<User> searchFriend(String searchName, Long userId);
+
+    List<User> getFriendList(Long userId);
+
+    Boolean sendAddFriendRequest(UserVo userVo , UserVo receiveUserVo);
 }

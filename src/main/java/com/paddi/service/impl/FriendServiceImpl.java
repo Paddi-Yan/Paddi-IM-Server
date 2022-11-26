@@ -1,8 +1,10 @@
 package com.paddi.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.paddi.entity.Friend;
 import com.paddi.entity.User;
+import com.paddi.entity.vo.UserVo;
 import com.paddi.mapper.FriendMapper;
 import com.paddi.service.FriendService;
 import com.paddi.service.UserService;
@@ -29,29 +31,30 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
     private UserService userService;
 
     @Override
-    public User searchFriend(String searchName, Long userId) {
-        //查询出的好友用户信息
-        User friend = userService.searchUser(searchName);
-        if(friend == null) {
-            return null;
-        }
+    public List<User> searchFriend(String searchName, Long userId) {
         //查询出来的好友关系
-        List<Friend> friendList = friendMapper.searchByUserId(userId);
-        Friend friendShip = null;
-        for(Friend item : friendList) {
-            if(item.getFriendId().equals(friend.getId())) {
-                friendShip = item;
-            }
-        }
-        if(friendShip == null) {
+        List<Long> friendIdList = friendMapper.searchByUserId(userId);
+        if(friendIdList.isEmpty()) {
             return null;
         }
-        return friend;
+        List<User> friendList = userService.query()
+                                        .getBaseMapper()
+                                        .selectList(new QueryWrapper<User>()
+                                        .like("username", searchName)
+                                        .in("id", friendIdList));
+        return friendList;
     }
 
-    public boolean checkFriendShip(Friend friend, Long var1, Long var2) {
-        Long friendId = friend.getFriendId();
-        Long userId = friend.getUserId();
-        return (friendId.equals(var1) || friendId.equals(var2)) && (userId.equals(var1) || userId.equals(var2));
+    @Override
+    public List<User> getFriendList(Long userId) {
+        List<Long> friendIdList = friendMapper.searchByUserId(userId);
+        List<User> friendList = userService.query().getBaseMapper().selectList(new QueryWrapper<User>().in("id", friendIdList));
+        return friendList;
+    }
+
+    @Override
+    public Boolean sendAddFriendRequest(UserVo userVo, UserVo receiveUserVo) {
+
+        return null;
     }
 }

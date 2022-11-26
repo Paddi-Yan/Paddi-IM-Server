@@ -3,6 +3,7 @@ package com.paddi.controller;
 
 import com.paddi.common.HttpStatusCode;
 import com.paddi.common.Result;
+import com.paddi.common.SearchUserStatusEnum;
 import com.paddi.entity.User;
 import com.paddi.entity.vo.LoginVo;
 import com.paddi.entity.vo.RegisterVo;
@@ -13,6 +14,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 
 /**
  * <p>
@@ -32,37 +34,29 @@ public class UserController {
     @PostMapping("/register")
     @ResponseBody
     public Result register(@RequestBody RegisterVo registerVo) {
-        if(registerVo.getUsername() == null || registerVo.getPassword() == null || registerVo.getGender() == null) {
-            return Result.fail(HttpStatusCode.REQUEST_PARAM_ERROR);
-        }
         User user = userService.register(registerVo);
         UserVo userVo = UserMapStruct.USER_MAPPING.userToUserVo(user);
-        if(userVo == null) {
-            return Result.fail(HttpStatusCode.ERROR, "用户注册失败!");
-        }
         return Result.success(userVo);
     }
 
     @ResponseBody
     @PostMapping("/login")
     public Result login(@RequestBody LoginVo loginVo) {
-        User loginResult = userService.login(loginVo.getUsername(), loginVo.getPassword());
-        if(loginResult == null) {
-            return Result.fail(HttpStatusCode.REQUEST_PARAM_ERROR, "用户名或密码不正确!");
-        }
-        return Result.success(loginResult);
+        return Result.success(userService.login(loginVo.getUsername(), loginVo.getPassword()));
     }
 
     @GetMapping("/search")
     @ResponseBody
-    @ApiOperation("根据用户名查询用户")
-    public Result searchUser(@RequestParam String username) {
-        User user = userService.searchUser(username);
-        if(user == null) {
+    @ApiOperation(value = "根据用户名查询用户",notes = "根据用户名完全匹配-不支持模糊查询-查询结果只有一个或零个")
+    public Result searchUser(@RequestParam Long id, @RequestParam String username) {
+        HashMap<String, Object> condition = userService.preConditionSearchUser(id, username);
+        SearchUserStatusEnum statusInfo = (SearchUserStatusEnum) condition.get("status");
+        if(SearchUserStatusEnum.USER_NOT_EXIST.status.equals(statusInfo.status)
+                || SearchUserStatusEnum.YOURSELF.status.equals(statusInfo.status)) {
             return Result.success(HttpStatusCode.NO_CONTENT, "查询结果为空");
         }
-        UserVo userVo = UserMapStruct.USER_MAPPING.userToUserVo(user);
-        return Result.success(userVo);
+        User user = (User) condition.get("user");
+        return Result.success(UserMapStruct.USER_MAPPING.userToUserVo(user));
     }
 }
 

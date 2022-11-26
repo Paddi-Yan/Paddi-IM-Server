@@ -9,7 +9,7 @@
         <result column="friend_id" property="friendId" />
     </resultMap>
 
-    <select id="searchByUserId" resultMap="BaseResultMap" >
+    <select id="searchByUserId" resultType="Long" >
         select friend_id as friend_id from sys_friend where user_id = ${userId} union all select user_id as friend_id from sys_friend where friend_id = ${userId};
     </select>
 

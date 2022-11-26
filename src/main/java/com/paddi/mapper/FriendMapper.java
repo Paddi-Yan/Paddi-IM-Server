@@ -17,5 +17,5 @@ import java.util.List;
 @Mapper
 public interface FriendMapper extends BaseMapper<Friend> {
 
-    List<Friend> searchByUserId(Long userId);
+    List<Long> searchByUserId(Long userId);
 }
