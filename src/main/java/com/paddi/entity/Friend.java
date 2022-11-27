@@ -34,5 +34,8 @@ public class Friend implements Serializable {
 
     private Long friendId;
 
-
+    public Friend(Long userId, Long friendId) {
+        this.userId = userId;
+        this.friendId = friendId;
+    }
 }

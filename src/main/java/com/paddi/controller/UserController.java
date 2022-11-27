@@ -50,9 +50,9 @@ public class UserController {
     @ApiOperation(value = "根据用户名查询用户",notes = "根据用户名完全匹配-不支持模糊查询-查询结果只有一个或零个")
     public Result searchUser(@RequestParam Long id, @RequestParam String username) {
         HashMap<String, Object> condition = userService.preConditionSearchUser(id, username);
-        SearchUserStatusEnum statusInfo = (SearchUserStatusEnum) condition.get("status");
-        if(SearchUserStatusEnum.USER_NOT_EXIST.status.equals(statusInfo.status)
-                || SearchUserStatusEnum.YOURSELF.status.equals(statusInfo.status)) {
+        Integer status = (Integer) condition.get("status");
+        if(SearchUserStatusEnum.USER_NOT_EXIST.status.equals(status)
+                || SearchUserStatusEnum.YOURSELF.status.equals(status)) {
             return Result.success(HttpStatusCode.NO_CONTENT, "查询结果为空");
         }
         User user = (User) condition.get("user");

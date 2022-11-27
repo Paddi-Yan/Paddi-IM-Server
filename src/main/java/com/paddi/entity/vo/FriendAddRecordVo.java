@@ -1,0 +1,42 @@
+package com.paddi.entity.vo;
+
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
+
+import java.io.Serializable;
+
+/**
+ * @Project: Paddi-IM-Server
+ * @Author: Paddi-Yan
+ * @CreatedTime: 2022年11月26日 21:16:57
+ */
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
+@ApiModel("好友请求")
+public class FriendAddRecordVo implements Serializable {
+    private static final long serialVersionUID = 5132272992369419317L;
+
+    private Long id;
+
+    @ApiModelProperty("用来区分是否是自己发送的好友请求")
+    private Boolean myself;
+
+    private Long senderId;
+
+    private Long receiverId;
+
+    @ApiModelProperty("请求处理状态 0：未处理 -1：拒绝 1：接收")
+    private Boolean accepted;
+
+    @ApiModelProperty("好友信息")
+    private UserVo friendInfo;
+
+    @ApiModelProperty("好友请求备注")
+    private String remark;
+}

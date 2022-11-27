@@ -8,12 +8,14 @@ import com.paddi.common.SearchUserStatusEnum;
 import com.paddi.entity.User;
 import com.paddi.entity.vo.RegisterVo;
 import com.paddi.exception.AuthenticationException;
+import com.paddi.exception.BaseException;
 import com.paddi.exception.RequestParamValidationException;
 import com.paddi.mapper.FriendMapper;
 import com.paddi.mapper.UserMapper;
 import com.paddi.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
@@ -30,6 +32,7 @@ import java.util.List;
  */
 @Service
 @Slf4j
+@Transactional(rollbackFor = BaseException.class)
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     @Resource
@@ -49,7 +52,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if(registerVo.getUsername() == null || registerVo.getPassword() == null || registerVo.getGender() == null) {
             throw new RequestParamValidationException(ImmutableMap.of("registerInfo", registerVo));
         }
-        User user = User.builder().gender(GenderEnum.valueOf(registerVo.getGender()))
+        User user = User.builder().gender(GenderEnum.getGenderEnum(registerVo.getGender()).get())
                                 .username(registerVo.getUsername())
                                 .password(registerVo.getPassword())
                                 .registerTime(LocalDateTime.now()).build();
@@ -66,6 +69,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if(user == null) {
             throw new AuthenticationException(ImmutableMap.of("username", username, "password", password));
         }
+        user.setLastLoginTime(LocalDateTime.now());
+        userMapper.updateById(user);
         return user;
     }
 

@@ -2,6 +2,12 @@ package com.paddi.common;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.UnaryOperator;
+import java.util.stream.Collectors;
+
 /**
  * @Project: Paddi-IM-Server
  * @Author: Paddi-Yan
@@ -20,6 +26,16 @@ public enum GenderEnum {
     GenderEnum(int code, String name) {
         this.code = code;
         this.name = name;
+    }
+
+    private static Map<String, GenderEnum> map;
+
+    static {
+        GenderEnum.map = Arrays.stream(GenderEnum.values()).collect(Collectors.toMap(GenderEnum::getName, UnaryOperator.identity()));
+    }
+
+    public static Optional<GenderEnum> getGenderEnum(String name) {
+        return Optional.of(GenderEnum.map.get(name));
     }
 
     public static int getCode(String name) {

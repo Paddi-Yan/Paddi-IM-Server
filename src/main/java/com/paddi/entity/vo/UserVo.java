@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 
 /**
  * @Project: Paddi-IM-Server
@@ -27,7 +26,5 @@ public class UserVo implements Serializable {
     private String gender;
 
     private String profile;
-
-    private LocalDateTime lastLoginTime;
-
+    
 }

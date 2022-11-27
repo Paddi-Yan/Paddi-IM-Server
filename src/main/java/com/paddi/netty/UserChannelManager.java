@@ -2,7 +2,7 @@ package com.paddi.netty;
 
 import io.netty.channel.Channel;
 
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @Project: Paddi-IM-Server
@@ -10,8 +10,8 @@ import java.util.HashMap;
  * @CreatedTime: 2022年11月25日 14:59:57
  */
 public class UserChannelManager {
-    private static HashMap<Long, Channel> USER_CHANNEL_MAP = new HashMap<>();
-    private static HashMap<Channel, Long> CHANNEL_USER_MAP = new HashMap<>();
+    private static ConcurrentHashMap<Long, Channel> USER_CHANNEL_MAP = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<Channel, Long> CHANNEL_USER_MAP = new ConcurrentHashMap<>();
     public static boolean put(Long senderId, Channel channel) {
         Channel c = UserChannelManager.USER_CHANNEL_MAP.put(senderId, channel);
         Long s = UserChannelManager.CHANNEL_USER_MAP.put(channel, senderId);

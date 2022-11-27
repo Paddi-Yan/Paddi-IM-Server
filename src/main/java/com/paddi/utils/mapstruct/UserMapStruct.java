@@ -6,6 +6,8 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
+import java.util.List;
+
 /**
  * @Project: Paddi-IM-Server
  * @Author: Paddi-Yan
@@ -17,4 +19,6 @@ public interface UserMapStruct {
 
     @Mapping(target = "gender", source = "gender.name")
     UserVo userToUserVo(User user);
+
+    List<UserVo> userListToUserVoList(List<User> users);
 }

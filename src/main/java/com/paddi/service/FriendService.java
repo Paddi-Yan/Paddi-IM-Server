@@ -21,5 +21,5 @@ public interface FriendService extends IService<Friend> {
 
     List<User> getFriendList(Long userId);
 
-    Boolean sendAddFriendRequest(UserVo userVo , UserVo receiveUserVo);
+    Boolean sendAddFriendRequest(UserVo userVo , UserVo receiveUserVo, String remark);
 }
