@@ -24,7 +24,7 @@ import java.util.List;
 
 /**
  * <p>
- *  服务实现类
+ * 服务实现类
  * </p>
  *
  * @author Paddi-Yan
@@ -53,12 +53,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new RequestParamValidationException(ImmutableMap.of("registerInfo", registerVo));
         }
         User user = User.builder().gender(GenderEnum.getGenderEnum(registerVo.getGender()).get())
-                                .username(registerVo.getUsername())
-                                .password(registerVo.getPassword())
-                                .registerTime(LocalDateTime.now()).build();
+                        .username(registerVo.getUsername())
+                        .password(registerVo.getPassword())
+                        .registerTime(LocalDateTime.now()).build();
         int insert = userMapper.insert(user);
         if(insert == 1) {
-            UserServiceImpl.log.info("用户注册成功: {}",user);
+            UserServiceImpl.log.info("用户注册成功: {}", user);
         }
         return user;
     }

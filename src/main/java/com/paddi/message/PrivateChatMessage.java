@@ -1,9 +1,8 @@
 package com.paddi.message;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -16,13 +15,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString(callSuper = true)
+@Builder
+@TableName("sys_private_chat_message")
 public class PrivateChatMessage extends AbstractMessage {
 
     private static final long serialVersionUID = 7235415216025984925L;
 
     private Long senderId;
-
-    private String senderName;
 
     private String content;
 
@@ -30,9 +29,8 @@ public class PrivateChatMessage extends AbstractMessage {
 
     private Long receiverId;
 
-    private String receiverName;
-
-    private boolean flag;
+    @TableField(value = "is_read")
+    private Boolean alreadyRead;
 
     @Override
     public int getMessageType() {

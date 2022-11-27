@@ -7,6 +7,7 @@ import com.paddi.entity.User;
 import com.paddi.entity.vo.UserVo;
 import com.paddi.mapper.FriendMapper;
 import com.paddi.mapper.UserMapper;
+import com.paddi.netty.ChatMessageHandler;
 import com.paddi.service.FriendAddRequestService;
 import com.paddi.service.FriendService;
 import com.paddi.service.UserService;
@@ -33,11 +34,11 @@ class PaddiImServerApplicationTests {
     @Test
     void contextLoads() {
         User user = User.builder()
-                         .username("Paddi-Yan")
-                         .password("123456")
-                         .gender(GenderEnum.FEMALE)
-                         .registerTime(LocalDateTime.now())
-                         .build();
+                        .username("Paddi-Yan")
+                        .password("123456")
+                        .gender(GenderEnum.FEMALE)
+                        .registerTime(LocalDateTime.now())
+                        .build();
         userMapper.insert(user);
         UserVo userVo = UserMapStruct.USER_MAPPING.userToUserVo(user);
         user.getGender().getName();
@@ -54,6 +55,7 @@ class PaddiImServerApplicationTests {
 
     @Resource
     private UserService userService;
+
     @Test
     void searchUserTest() {
 
@@ -63,12 +65,12 @@ class PaddiImServerApplicationTests {
 
     @Test
     void enumTest() {
-        List<User> users = userService.getBaseMapper().selectList(null);
-        users.forEach(System.out :: println);
+        ChatMessageHandler chatMessageHandler = new ChatMessageHandler();
     }
 
     @Resource
     private FriendAddRequestService friendAddRequestService;
+
     @Test
     void test() {
         //Sabrina的好友请求列表
@@ -78,13 +80,14 @@ class PaddiImServerApplicationTests {
         Long userId = 1596190150966370306L;
         User user = userService.getBaseMapper().selectById(userId);
         UserVo userVo = UserMapStruct.USER_MAPPING.userToUserVo(user);
-        System.out.println("以下是"+userVo+"的好友请求列表");
+        System.out.println("以下是" + userVo + "的好友请求列表");
         for(FriendAddRecord friendAddRecord : list) {
-            Long queryId = friendAddRecord.getReceiverId().equals(userId) ? friendAddRecord.getSenderId() : friendAddRecord.getReceiverId();
+            Long queryId = friendAddRecord.getReceiverId()
+                                          .equals(userId) ? friendAddRecord.getSenderId() : friendAddRecord.getReceiverId();
             User friend = userService.getBaseMapper().selectById(queryId);
             UserVo friendVo = UserMapStruct.USER_MAPPING.userToUserVo(friend);
-//            FriendAddRecordVo friendAddRecordVo = FriendRecordMapStruct.REQUEST_MAPPING.entityToVo(friendAddRecord, userVo, friendVo);
-//            System.out.println(friendAddRecordVo);
+            //            FriendAddRecordVo friendAddRecordVo = FriendRecordMapStruct.REQUEST_MAPPING.entityToVo(friendAddRecord, userVo, friendVo);
+            //            System.out.println(friendAddRecordVo);
         }
     }
 

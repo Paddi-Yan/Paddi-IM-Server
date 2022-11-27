@@ -21,7 +21,7 @@ import java.util.List;
 
 /**
  * <p>
- *  服务实现类
+ * 服务实现类
  * </p>
  *
  * @author Paddi-Yan
@@ -48,17 +48,19 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
             return null;
         }
         List<User> friendList = userService.query()
-                                        .getBaseMapper()
-                                        .selectList(new QueryWrapper<User>()
-                                        .like("username", searchName)
-                                        .in("id", friendIdList));
+                                           .getBaseMapper()
+                                           .selectList(new QueryWrapper<User>()
+                                                   .like("username", searchName)
+                                                   .in("id", friendIdList));
         return friendList;
     }
 
     @Override
     public List<User> getFriendList(Long userId) {
         List<Long> friendIdList = friendMapper.searchByUserId(userId);
-        List<User> friendList = userService.query().getBaseMapper().selectList(new QueryWrapper<User>().in("id", friendIdList));
+        List<User> friendList = userService.query()
+                                           .getBaseMapper()
+                                           .selectList(new QueryWrapper<User>().in("id", friendIdList));
         return friendList;
     }
 

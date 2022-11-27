@@ -39,7 +39,7 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
         ChatHandler.clients.writeAndFlush(
                 new TextWebSocketFrame(
                         "[服务器]在" + LocalDateTime.now()
-                        + "接收到消息: " + content));
+                                + "接收到消息: " + content));
 
     }
 
@@ -53,6 +53,10 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
         //当触发handlerRemoved ChannelGroup会自动移除对应的channel
         //以下语句是不必要的
         //clients.remove(ctx.channel());
-        ChatHandler.log.info("客户端断开连接,Channel对应的长ID为{},Channel对应的短ID为{}",ctx.channel().id().asLongText(), ctx.channel().id().asShortText());
+        ChatHandler.log.info("客户端断开连接,Channel对应的长ID为{},Channel对应的短ID为{}", ctx.channel()
+                                                                                              .id()
+                                                                                              .asLongText(), ctx.channel()
+                                                                                                                .id()
+                                                                                                                .asShortText());
     }
 }

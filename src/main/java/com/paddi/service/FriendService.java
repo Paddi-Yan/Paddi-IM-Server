@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author Paddi-Yan
@@ -21,5 +21,5 @@ public interface FriendService extends IService<Friend> {
 
     List<User> getFriendList(Long userId);
 
-    Boolean sendAddFriendRequest(UserVo userVo , UserVo receiveUserVo, String remark);
+    Boolean sendAddFriendRequest(UserVo userVo, UserVo receiveUserVo, String remark);
 }

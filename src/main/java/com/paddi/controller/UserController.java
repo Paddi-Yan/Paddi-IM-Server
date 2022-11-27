@@ -18,7 +18,7 @@ import java.util.HashMap;
 
 /**
  * <p>
- *  前端控制器
+ * 前端控制器
  * </p>
  *
  * @author Paddi-Yan
@@ -47,7 +47,7 @@ public class UserController {
 
     @GetMapping("/search")
     @ResponseBody
-    @ApiOperation(value = "根据用户名查询用户",notes = "根据用户名完全匹配-不支持模糊查询-查询结果只有一个或零个")
+    @ApiOperation(value = "根据用户名查询用户", notes = "根据用户名完全匹配-不支持模糊查询-查询结果只有一个或零个")
     public Result searchUser(@RequestParam Long id, @RequestParam String username) {
         HashMap<String, Object> condition = userService.preConditionSearchUser(id, username);
         Integer status = (Integer) condition.get("status");

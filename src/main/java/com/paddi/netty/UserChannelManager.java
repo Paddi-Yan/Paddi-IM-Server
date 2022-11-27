@@ -12,10 +12,11 @@ import java.util.concurrent.ConcurrentHashMap;
 public class UserChannelManager {
     private static ConcurrentHashMap<Long, Channel> USER_CHANNEL_MAP = new ConcurrentHashMap<>();
     private static ConcurrentHashMap<Channel, Long> CHANNEL_USER_MAP = new ConcurrentHashMap<>();
+
     public static boolean put(Long senderId, Channel channel) {
-        Channel c = UserChannelManager.USER_CHANNEL_MAP.put(senderId, channel);
-        Long s = UserChannelManager.CHANNEL_USER_MAP.put(channel, senderId);
-        return c != null && s != null;
+        UserChannelManager.USER_CHANNEL_MAP.put(senderId, channel);
+        UserChannelManager.CHANNEL_USER_MAP.put(channel, senderId);
+        return UserChannelManager.USER_CHANNEL_MAP.get(senderId) != null && UserChannelManager.CHANNEL_USER_MAP.get(channel) != null;
     }
 
     public static Channel getChannel(Long senderId) {
@@ -34,11 +35,12 @@ public class UserChannelManager {
         UserChannelManager.CHANNEL_USER_MAP.remove(channel);
     }
 
-    public static void remove(Channel channel) {
+    public static Long remove(Channel channel) throws Exception {
         Long senderId = UserChannelManager.CHANNEL_USER_MAP.remove(channel);
         if(senderId == null) {
-            return;
+            throw new Exception("移除用户绑定连接失败");
         }
         UserChannelManager.USER_CHANNEL_MAP.remove(senderId);
+        return senderId;
     }
 }

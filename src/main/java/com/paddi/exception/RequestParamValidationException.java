@@ -9,10 +9,9 @@ import java.util.Map;
  * @Author: Paddi-Yan
  * @CreatedTime: 2022年11月09日 15:22:57
  */
-public class RequestParamValidationException extends BaseException{
+public class RequestParamValidationException extends BaseException {
 
     private static final long serialVersionUID = -6495622422694496133L;
-
 
 
     public RequestParamValidationException(Map<String, Object> data) {

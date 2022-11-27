@@ -14,7 +14,7 @@ public enum FriendRequestStatusEnum {
 
     public final String message;
 
-    FriendRequestStatusEnum(Integer status, String message){
+    FriendRequestStatusEnum(Integer status, String message) {
         this.status = status;
         this.message = message;
     }
@@ -24,8 +24,8 @@ public enum FriendRequestStatusEnum {
     }
 
     public static String getMsgByKey(Integer status) {
-        for (SearchUserStatusEnum type : SearchUserStatusEnum.values()) {
-            if (type.getStatus().equals(status)) {
+        for(SearchUserStatusEnum type : SearchUserStatusEnum.values()) {
+            if(type.getStatus().equals(status)) {
                 return type.message;
             }
         }

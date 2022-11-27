@@ -18,7 +18,7 @@ public interface FriendRecordMapStruct {
 
 
     @Mapping(target = "myself", expression = "java(friendAddRecord.getSenderId().equals(userVo.getId()))")
-//    @Mapping(target = "friendInfo", expression = "java(friendAddRecordVo.getSenderId().equals(userVo.getId()) ? friendVo : userVo)")
+    //    @Mapping(target = "friendInfo", expression = "java(friendAddRecordVo.getSenderId().equals(userVo.getId()) ? friendVo : userVo)")
     @Mapping(target = "id", source = "friendAddRecord.id")
     FriendAddRecordVo entityToVo(FriendAddRecord friendAddRecord, UserVo userVo);
 }

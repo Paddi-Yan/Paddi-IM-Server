@@ -5,7 +5,7 @@ package com.paddi.message;
  * @Author: Paddi-Yan
  * @CreatedTime: 2022年11月25日 15:28:07
  */
-public class GroupChatMessage extends AbstractMessage{
+public class GroupChatMessage extends AbstractMessage {
     private static final long serialVersionUID = -3667441796121286633L;
 
     @Override

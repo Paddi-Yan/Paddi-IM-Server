@@ -11,7 +11,7 @@ import java.util.Map;
  * @Author: Paddi-Yan
  * @CreatedTime: 2022年11月26日 13:38:42
  */
-public class BaseException extends RuntimeException{
+public class BaseException extends RuntimeException {
     private static final long serialVersionUID = 5501245689467498091L;
 
     private final ErrorCode error;
@@ -29,10 +29,11 @@ public class BaseException extends RuntimeException{
     protected BaseException(ErrorCode error, Map<String, Object> data, Throwable cause) {
         super(error.getMessage(), cause);
         this.error = error;
-        if (!ObjectUtils.isEmpty(data)) {
+        if(!ObjectUtils.isEmpty(data)) {
             this.data.putAll(data);
         }
     }
+
     public ErrorCode getError() {
         return error;
     }

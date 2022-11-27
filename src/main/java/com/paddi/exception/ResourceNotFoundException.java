@@ -14,7 +14,6 @@ public class ResourceNotFoundException extends BaseException {
     private static final long serialVersionUID = 4948121752707476985L;
 
 
-
     public ResourceNotFoundException(Map<String, Object> data) {
         super(ErrorCode.RESOURCE_NOT_FOUND, data);
     }

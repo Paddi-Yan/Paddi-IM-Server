@@ -1,5 +1,6 @@
 package com.paddi.message;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
 import lombok.ToString;
 
@@ -20,6 +21,7 @@ public abstract class AbstractMessage implements Serializable {
 
     private String id;
 
+    @TableField(exist = false)
     private int messageType;
 
     public static final int PRIVATE_MESSAGE = 1;
@@ -27,11 +29,11 @@ public abstract class AbstractMessage implements Serializable {
     public static final int GROUP_MESSAGE = 2;
 
 
-
     private static final Map<Integer, Class<?>> messageClasses = new HashMap<>();
 
     /**
      * 返回消息类型
+     *
      * @return MessageType
      */
     public abstract int getMessageType();

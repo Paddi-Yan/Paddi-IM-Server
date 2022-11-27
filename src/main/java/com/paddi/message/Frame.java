@@ -1,9 +1,8 @@
 package com.paddi.message;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.*;
 
 import java.io.Serializable;
 
@@ -16,8 +15,13 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
+@Builder
+@ApiModel("WebSocket发送的数据帧")
 public class Frame implements Serializable {
     private static final long serialVersionUID = 3250130767066001523L;
+
+    @ApiModelProperty("消息序列号")
+    private String sequenceId;
 
     private Long senderId;
 

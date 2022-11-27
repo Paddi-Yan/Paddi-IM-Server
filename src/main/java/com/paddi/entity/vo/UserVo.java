@@ -26,5 +26,5 @@ public class UserVo implements Serializable {
     private String gender;
 
     private String profile;
-    
+
 }

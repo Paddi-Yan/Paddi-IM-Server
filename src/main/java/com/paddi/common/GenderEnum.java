@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  */
 public enum GenderEnum {
     MALE(1, "男"),
-    FEMALE(2,"女");
+    FEMALE(2, "女");
 
 
     private int code;
@@ -31,7 +31,8 @@ public enum GenderEnum {
     private static Map<String, GenderEnum> map;
 
     static {
-        GenderEnum.map = Arrays.stream(GenderEnum.values()).collect(Collectors.toMap(GenderEnum::getName, UnaryOperator.identity()));
+        GenderEnum.map = Arrays.stream(GenderEnum.values())
+                               .collect(Collectors.toMap(GenderEnum :: getName, UnaryOperator.identity()));
     }
 
     public static Optional<GenderEnum> getGenderEnum(String name) {

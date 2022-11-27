@@ -4,13 +4,13 @@
 
     <!-- 通用查询映射结果 -->
     <resultMap id="BaseResultMap" type="com.paddi.entity.User">
-        <id column="id" property="id" />
-        <result column="username" property="username" />
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
         <result column="gender" property="gender"/>
-        <result column="register_time" property="registerTime" />
-        <result column="password" property="password" />
-        <result column="profile" property="profile" />
-        <result column="last_login_time" property="lastLoginTime" />
+        <result column="register_time" property="registerTime"/>
+        <result column="password" property="password"/>
+        <result column="profile" property="profile"/>
+        <result column="last_login_time" property="lastLoginTime"/>
     </resultMap>
 
 </mapper>

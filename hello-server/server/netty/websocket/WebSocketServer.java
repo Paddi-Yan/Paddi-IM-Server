@@ -24,8 +24,8 @@ public class WebSocketServer {
         } catch(InterruptedException e) {
             throw new RuntimeException(e);
         } finally {
-          boosGroup.shutdownGracefully();
-          workerGroup.shutdownGracefully();
+            boosGroup.shutdownGracefully();
+            workerGroup.shutdownGracefully();
         }
     }
 }

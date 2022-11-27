@@ -35,7 +35,7 @@ public class ErrorResponse {
         this.message = message;
         this.path = path;
         this.timestamp = Instant.now();
-        if (!ObjectUtils.isEmpty(data)) {
+        if(!ObjectUtils.isEmpty(data)) {
             this.data.putAll(data);
         }
     }

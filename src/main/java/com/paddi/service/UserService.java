@@ -8,7 +8,7 @@ import java.util.HashMap;
 
 /**
  * <p>
- *  服务类
+ * 服务类
  * </p>
  *
  * @author Paddi-Yan
@@ -18,6 +18,7 @@ public interface UserService extends IService<User> {
 
     /**
      * 检查用户名是否存在
+     *
      * @param username
      * @return true-存在/false-不存在
      */

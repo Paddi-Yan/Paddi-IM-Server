@@ -24,7 +24,7 @@ import java.util.List;
 
 /**
  * <p>
- *  前端控制器
+ * 前端控制器
  * </p>
  *
  * @author Paddi-Yan
@@ -47,7 +47,7 @@ public class FriendController {
     @GetMapping("/search")
     @ApiOperation("根据名称查找好友")
     public Result searchFriend(@RequestParam String searchName, @RequestParam Long userId) {
-        List<User> friendList= friendService.searchFriend(searchName, userId);
+        List<User> friendList = friendService.searchFriend(searchName, userId);
         if(friendList.isEmpty()) {
             return Result.success(HttpStatusCode.NO_CONTENT, "查询结果为空");
         }
@@ -89,7 +89,7 @@ public class FriendController {
         if(!result) {
             return Result.success(HttpStatusCode.NO_CONTENT, "请勿重复添加好友");
         }
-        return Result.success(HttpStatusCode.SUCCESS,"添加好友成功");
+        return Result.success(HttpStatusCode.SUCCESS, "添加好友成功");
     }
 
     @ResponseBody
@@ -116,7 +116,7 @@ public class FriendController {
 
     @ResponseBody
     @PostMapping("/handleRequest")
-    @ApiOperation(value = "处理好友请求",notes = " -1：拒绝添加 1：接收好友请求")
+    @ApiOperation(value = "处理好友请求", notes = " -1：拒绝添加 1：接收好友请求")
     public Result handleRequest(@RequestParam Long id, @RequestParam Long userId, @RequestParam Integer type) {
         return Result.success(friendAddRequestService.handleRequest(id, userId, type));
     }

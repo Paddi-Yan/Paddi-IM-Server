@@ -19,7 +19,7 @@ public class WebSocketInitializer extends ChannelInitializer<SocketChannel> {
         //对写大数据的支持
         ch.pipeline().addLast(new ChunkedWriteHandler());
         //HttpMessage进行聚合，聚合成FullHttpRequest或FullHttpResponse
-        ch.pipeline().addLast(new HttpObjectAggregator(1024*64));
+        ch.pipeline().addLast(new HttpObjectAggregator(1024 * 64));
         // ====================== 以上是用于支持HTTP协议    ======================
 
         // ====================== 以下是支持Websocket ======================

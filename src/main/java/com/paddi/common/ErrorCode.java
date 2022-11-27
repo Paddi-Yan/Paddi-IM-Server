@@ -8,7 +8,7 @@ import org.springframework.http.HttpStatus;
  * @CreatedTime: 2022年11月26日 13:37:57
  */
 public enum ErrorCode {
-    RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND,"未能找到该资源"),
+    RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND.value(), HttpStatus.NOT_FOUND, "未能找到该资源"),
     REQUEST_VALIDATION_FAILED(HttpStatus.BAD_REQUEST.value(), HttpStatus.BAD_REQUEST, "请求数据校验失败"),
     FORBIDDEN(HttpStatus.FORBIDDEN.value(), HttpStatus.FORBIDDEN, "权限不足,服务器拒绝处理该请求"),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED.value(), HttpStatus.UNAUTHORIZED, "用户未通过身份验证"),

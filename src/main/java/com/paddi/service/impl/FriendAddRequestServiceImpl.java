@@ -59,7 +59,8 @@ public class FriendAddRequestServiceImpl extends ServiceImpl<FriendAddRequestMap
         checkUserById(userId);
         FriendAddRecord friendAddRecord = friendAddRequestMapper.selectById(id);
         //接收请求的用户ID不匹配 || 请求已经处理过了
-        if(!friendAddRecord.getReceiverId().equals(userId) || !FriendRequestStatusEnum.NOT_HANDLE.getStatus().equals(friendAddRecord.getAccepted())) {
+        if(!friendAddRecord.getReceiverId().equals(userId) || !FriendRequestStatusEnum.NOT_HANDLE.getStatus()
+                                                                                                 .equals(friendAddRecord.getAccepted())) {
             throw new RequestParamValidationException(ImmutableMap.of("userId", userId, "requestStatus", friendAddRecord.getReceiverId()));
         }
         if(!FriendRequestStatusEnum.REFUSED.status.equals(type) || !FriendRequestStatusEnum.ACCEPTED.status.equals(type)) {

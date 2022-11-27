@@ -9,7 +9,7 @@ import java.util.Map;
  * @Author: Paddi-Yan
  * @CreatedTime: 2022年11月09日 15:30:25
  */
-public class InternalServerException extends BaseException{
+public class InternalServerException extends BaseException {
     private static final long serialVersionUID = -4371638586274769255L;
 
 

@@ -15,7 +15,7 @@ public enum SearchUserStatusEnum {
 
     public final String message;
 
-    SearchUserStatusEnum(Integer status, String message){
+    SearchUserStatusEnum(Integer status, String message) {
         this.status = status;
         this.message = message;
     }
@@ -25,8 +25,8 @@ public enum SearchUserStatusEnum {
     }
 
     public static String getMsgByKey(Integer status) {
-        for (SearchUserStatusEnum type : SearchUserStatusEnum.values()) {
-            if (type.getStatus().equals(status)) {
+        for(SearchUserStatusEnum type : SearchUserStatusEnum.values()) {
+            if(type.getStatus().equals(status)) {
                 return type.message;
             }
         }
