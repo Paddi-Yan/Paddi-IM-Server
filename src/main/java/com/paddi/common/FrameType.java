@@ -14,8 +14,8 @@ public enum FrameType {
     CLOSE(5, "关闭连接"),
     PRIVATE_CHAT_SUCCESS_RESPONSE(6, "私信消息发送成功"),
     PRIVATE_CHAT_FAIL_RESPONSE(7, "私信消息发送失败"),
-
-    UNREAD_PRIVATE_MESSAGE(8, "未读消息")
+    UNREAD_PRIVATE_MESSAGE(8, "未读消息"),
+    AUTHORIZATION_WARNING_MESSAGE(9, "非好友关系,无权限发送消息")
     ;
 
     public final Integer type;
@@ -32,5 +32,13 @@ public enum FrameType {
 
     public String getDescription() {
         return description;
+    }
+
+    @Override
+    public String toString() {
+        return "FrameType{" +
+                "type=" + type +
+                ", description='" + description + '\'' +
+                '}';
     }
 }

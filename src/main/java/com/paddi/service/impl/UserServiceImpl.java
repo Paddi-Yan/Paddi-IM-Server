@@ -81,9 +81,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public HashMap<String, Object> preConditionSearchUser(Long id, String searchName) {
+        User user = searchUser(searchName);
+        return check(id, user);
+    }
+
+    @Override
+    public HashMap<String, Object> preConditionSearchUser(Long id, Long otherId) {
+        User user = userMapper.selectById(otherId);
+        return check(id, user);
+    }
+
+    /**
+     *
+     * @param id 用户ID
+     * @param user 陌生人用户信息
+     * @return
+     */
+    private HashMap<String, Object> check(Long id, User user) {
         HashMap<String, Object> map = new HashMap<>(2);
         Integer status = null;
-        User user = searchUser(searchName);
         //不存在该用户
         if(user == null) {
             status = SearchUserStatusEnum.USER_NOT_EXIST.status;

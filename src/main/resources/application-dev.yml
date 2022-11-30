@@ -35,3 +35,9 @@ mybatis-plus:
       logic-delete-value: 1
       logic-not-delete-value: 0
   type-enums-package: com.paddi.common
+# minio 文件存储配置信息
+minio:
+  endpoint: http://8.134.113.149:9000
+  accesskey: Paddi-Yan
+  secretKey: airenpA1
+  bucket: files

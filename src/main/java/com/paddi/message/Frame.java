@@ -1,5 +1,6 @@
 package com.paddi.message;
 
+import com.paddi.common.FrameType;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
@@ -29,7 +30,7 @@ public class Frame implements Serializable {
 
     private Long receiverId;
 
-    private Integer type;
+    private FrameType type;
 
     private Object extend;
 }

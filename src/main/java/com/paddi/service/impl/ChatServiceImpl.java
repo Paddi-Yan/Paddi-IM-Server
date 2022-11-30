@@ -45,7 +45,7 @@ public class ChatServiceImpl implements ChatService {
         if(!messageList.isEmpty()) {
             Map<Long, List<PrivateChatMessage>> messageMap = messageList.stream()
                                                                .collect(Collectors.groupingBy(PrivateChatMessage::getSenderId));
-            Frame frame = Frame.builder().receiverId(userId).type(FrameType.UNREAD_PRIVATE_MESSAGE.getType())
+            Frame frame = Frame.builder().receiverId(userId).type(FrameType.UNREAD_PRIVATE_MESSAGE)
                                .extend(messageMap).build();
             channel.writeAndFlush(new TextWebSocketFrame(new Gson().toJson(frame)));
         }

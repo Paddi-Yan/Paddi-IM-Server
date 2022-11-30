@@ -3,10 +3,13 @@ package com.paddi.netty;
 import com.google.gson.Gson;
 import com.paddi.common.FrameType;
 import com.paddi.common.MessageReadEnum;
+import com.paddi.common.SearchUserStatusEnum;
 import com.paddi.message.Frame;
 import com.paddi.message.PrivateChatMessage;
 import com.paddi.service.ChatService;
+import com.paddi.service.UserService;
 import com.paddi.service.impl.ChatServiceImpl;
+import com.paddi.service.impl.UserServiceImpl;
 import com.paddi.utils.SpringBeanUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -21,6 +24,7 @@ import io.netty.util.concurrent.GlobalEventExecutor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 
 /**
  * @Project: Paddi-IM-Server
@@ -62,9 +66,6 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
                 new TextWebSocketFrame(
                         "[服务器]在" + LocalDateTime.now()
                                 + "接收到消息: " + msg.text()));
-        LocalDateTime sendTime = LocalDateTime.now();
-        String sequenceId = frame.getSequenceId();
-        String content = frame.getContent();
         Long senderId = frame.getSenderId();
         Long receiverId = frame.getReceiverId();
         Channel senderChannel = ctx.channel();
@@ -77,45 +78,7 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
                 ChatMessageHandler.log.info("用户处于离线状态");
                 //用户处于离线状态->>>应该使用个推\JPush\小米推送等进行消息推送
             } else {
-                ChatMessageHandler.log.info("用户处于在线状态");
-                //将消息进行持久化
-                //标记消息为未读取
-                PrivateChatMessage message = PrivateChatMessage.builder()
-                                                               .senderId(senderId)
-                                                               .receiverId(receiverId)
-                                                               .content(content)
-                                                               .sendTime(sendTime)
-                                                               .alreadyRead(MessageReadEnum.UNREAD.getStatus()).build();
-                message.setId(sequenceId);
-                ChatService chatService = (ChatService) SpringBeanUtil.getBean(ChatServiceImpl.class);
-                try {
-                    chatService.sendPrivateMessage(message);
-                    ChatMessageHandler.log.info("消息序列号为:{}发送成功,消息内容为{}", sequenceId, message);
-                    Frame senderResponseFrame = Frame.builder()
-                                                     .sequenceId(sequenceId)
-                                                     .type(FrameType.PRIVATE_CHAT_SUCCESS_RESPONSE.getType())
-                                                     .extend(FrameType.PRIVATE_CHAT_SUCCESS_RESPONSE.getDescription())
-                                                     .senderId(senderId)
-                                                     .receiverId(receiverId).build();
-                    senderChannel.writeAndFlush(
-                            new TextWebSocketFrame(new Gson().toJson(senderResponseFrame))
-                    );
-                    receiverChannel.writeAndFlush(
-                            new TextWebSocketFrame(new Gson().toJson(frame)));
-
-                } catch(Exception e) {
-                    ChatMessageHandler.log.error("消息发送失败,原因: {}",e);
-                    //消息发送失败
-                    Frame senderResponseFrame = Frame.builder()
-                                                     .sequenceId(sequenceId)
-                                                     .type(FrameType.PRIVATE_CHAT_FAIL_RESPONSE.getType())
-                                                     .senderId(senderId)
-                                                     .extend(FrameType.PRIVATE_CHAT_FAIL_RESPONSE.getDescription())
-                                                     .receiverId(receiverId).build();
-                    senderChannel.writeAndFlush(
-                            new TextWebSocketFrame(new Gson().toJson(senderResponseFrame))
-                    );
-                }
+                ChatMessageHandler.sendPrivateMessage(frame, senderChannel, receiverChannel);
             }
         } else if(FrameType.GROUP_CHAT.type.equals(frame.getType())) {
             //群聊消息
@@ -124,6 +87,64 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
         } else if(FrameType.CLOSE.type.equals(frame.getType())) {
             //关闭连接
             UserChannelManager.remove(senderId);
+        }
+    }
+
+    private static void sendPrivateMessage(Frame frame,
+                                  Channel senderChannel,
+                                  Channel receiverChannel) {
+        ChatMessageHandler.log.info("用户处于在线状态");
+        //=======================================>>>需要验证是否是好友<<<============================================
+        ChatMessageHandler.log.error("=======================================>>>请注意需要验证是否是好友<<<============================================");
+        Long senderId = frame.getSenderId();
+        Long receiverId = frame.getSenderId();
+        String content = frame.getContent();
+        LocalDateTime sendTime = LocalDateTime.now();
+        String sequenceId = frame.getSequenceId();
+        UserService userService = (UserService) SpringBeanUtil.getBean(UserServiceImpl.class);
+        HashMap<String, Object> map = userService.preConditionSearchUser(senderId, receiverId);
+        Integer status = (Integer) map.get("status");
+        //不为好友关系
+        if(!SearchUserStatusEnum.ALREADY_FRIENDS.status.equals(status)) {
+            senderChannel.writeAndFlush(new TextWebSocketFrame(
+                    new Gson().toJson(new Frame(sequenceId, senderId, content, receiverId, FrameType.AUTHORIZATION_WARNING_MESSAGE, null))
+            ));
+        }
+        //将消息进行持久化
+        //标记消息为未读取
+        PrivateChatMessage message = PrivateChatMessage.builder()
+                                                       .senderId(senderId)
+                                                       .receiverId(receiverId)
+                                                       .content(content)
+                                                       .sendTime(sendTime)
+                                                       .alreadyRead(MessageReadEnum.UNREAD.getStatus()).build();
+        message.setId(sequenceId);
+        ChatService chatService = (ChatService) SpringBeanUtil.getBean(ChatServiceImpl.class);
+        try {
+            chatService.sendPrivateMessage(message);
+            ChatMessageHandler.log.info("消息序列号为:{}发送成功,消息内容为{}", sequenceId, message);
+            Frame senderResponseFrame = Frame.builder()
+                                             .sequenceId(sequenceId)
+                                             .type(FrameType.PRIVATE_CHAT_SUCCESS_RESPONSE)
+                                             .senderId(senderId)
+                                             .receiverId(receiverId).build();
+            senderChannel.writeAndFlush(
+                    new TextWebSocketFrame(new Gson().toJson(senderResponseFrame))
+            );
+            receiverChannel.writeAndFlush(
+                    new TextWebSocketFrame(new Gson().toJson(frame)));
+
+        } catch(Exception e) {
+            ChatMessageHandler.log.error("消息发送失败,原因: {}",e);
+            //消息发送失败
+            Frame senderResponseFrame = Frame.builder()
+                                             .sequenceId(sequenceId)
+                                             .type(FrameType.PRIVATE_CHAT_FAIL_RESPONSE)
+                                             .senderId(senderId)
+                                             .receiverId(receiverId).build();
+            senderChannel.writeAndFlush(
+                    new TextWebSocketFrame(new Gson().toJson(senderResponseFrame))
+            );
         }
     }
 
