@@ -1,5 +1,7 @@
 package com.paddi.entity.vo;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -22,13 +24,16 @@ import java.io.Serializable;
 public class FriendAddRecordVo implements Serializable {
     private static final long serialVersionUID = 5132272992369419317L;
 
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
 
     @ApiModelProperty("用来区分是否是自己发送的好友请求")
     private Boolean myself;
 
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long senderId;
 
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long receiverId;
 
     @ApiModelProperty("请求处理状态 0：未处理 -1：拒绝 1：接收")

@@ -10,7 +10,7 @@ import io.netty.channel.Channel;
  */
 public interface ChatService {
 
-    PrivateChatMessage sendPrivateMessage(PrivateChatMessage message) throws Exception;
+    PrivateChatMessage sendPrivateMessage(PrivateChatMessage message);
 
     void sendUnreadMessage(Channel channel, Long userId);
 }

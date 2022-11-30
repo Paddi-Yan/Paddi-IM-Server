@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
 
 /**
  * @Project: Paddi-IM-Server
@@ -40,7 +41,7 @@ public class FileController {
     @ResponseBody
     @ApiOperation("根据文件名下载文件")
     public Result download( HttpServletResponse response, @PathVariable String fileName) {
-        Boolean isSuccess = minioUtil.download(response, fileName);
-        return isSuccess ? Result.success("文件下载成功: "+fileName) : Result.fail(HttpStatusCode.NO_CONTENT, "文件不存在下载失败");
+        Map<String, String> result = minioUtil.download(response, fileName);
+        return result != null ? Result.success(result) : Result.fail(HttpStatusCode.NO_CONTENT, "文件不存在下载失败");
     }
 }

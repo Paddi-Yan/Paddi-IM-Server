@@ -29,11 +29,8 @@ public class ChatServiceImpl implements ChatService {
     private PrivateChatMapper privateChatMapper;
 
     @Override
-    public PrivateChatMessage sendPrivateMessage(PrivateChatMessage message) throws Exception {
-        int insert = privateChatMapper.insert(message);
-        if(insert == 0) {
-            throw new Exception();
-        }
+    public PrivateChatMessage sendPrivateMessage(PrivateChatMessage message){
+        privateChatMapper.insert(message);
         return message;
     }
 
@@ -45,7 +42,7 @@ public class ChatServiceImpl implements ChatService {
         if(!messageList.isEmpty()) {
             Map<Long, List<PrivateChatMessage>> messageMap = messageList.stream()
                                                                .collect(Collectors.groupingBy(PrivateChatMessage::getSenderId));
-            Frame frame = Frame.builder().receiverId(userId).type(FrameType.UNREAD_PRIVATE_MESSAGE)
+            Frame frame = Frame.builder().receiverId(userId).type(FrameType.UNREAD_PRIVATE_MESSAGE.getType())
                                .extend(messageMap).build();
             channel.writeAndFlush(new TextWebSocketFrame(new Gson().toJson(frame)));
         }

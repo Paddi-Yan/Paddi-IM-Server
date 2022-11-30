@@ -16,6 +16,8 @@ import java.io.InputStream;
 import java.net.URLEncoder;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @Project: minio-demo
@@ -79,30 +81,35 @@ public class MinioUtil {
     }
 
 
-    public Boolean download(HttpServletResponse response, String fileName) {
+    public Map<String, String> download(HttpServletResponse response, String fileName) {
         StatObjectResponse stat = null;
         GetObjectResponse in = null;
+        HashMap<String, String> result = new HashMap<>(2);
         try{
             stat = client.statObject(StatObjectArgs.builder()
                                                    .bucket(bucketName)
                                                    .object(fileName)
                                                    .build());
-            response.setContentType(stat.contentType());
-            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8"));
             in = client.getObject(GetObjectArgs.builder()
                                                .bucket(bucketName)
                                                .object(fileName).build());
+            String size = FileSizeUnitUtil.readableFileSize(stat.size());
+            log.info("下载文件:{}, 文件大小:{}",fileName, size);
             if(in == null) {
-                return false;
+                return null;
             }
+            response.setContentType(stat.contentType());
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8")+"/size="+size);
             IOUtils.copy(in, response.getOutputStream());
-            return true;
+            result.put("fileName", fileName);
+            result.put("size", size);
+            return result;
         } catch(ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException |
                 InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException |
                 XmlParserException e) {
             e.printStackTrace();
             MinioUtil.log.warn("文件下载失败");
-            return false;
+            return null;
         } finally {
             if(in != null) {
                 try {

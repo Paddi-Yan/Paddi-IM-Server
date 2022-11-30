@@ -10,5 +10,8 @@
         <result column="receiver_id" property="receiverId"/>
         <result column="send_time" property="sendTime"/>
         <result column="is_read" property="read"/>
+        <result column="type" property="type"/>
+        <result column="extend_name" property="extendName"/>
+        <result column="extend_size" property="extendSize"/>
     </resultMap>
 </mapper>

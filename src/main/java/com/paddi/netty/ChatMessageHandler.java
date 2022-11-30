@@ -3,6 +3,7 @@ package com.paddi.netty;
 import com.google.gson.Gson;
 import com.paddi.common.FrameType;
 import com.paddi.common.MessageReadEnum;
+import com.paddi.common.MessageType;
 import com.paddi.common.SearchUserStatusEnum;
 import com.paddi.message.Frame;
 import com.paddi.message.PrivateChatMessage;
@@ -25,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @Project: Paddi-IM-Server
@@ -68,20 +70,76 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
                                 + "接收到消息: " + msg.text()));
         Long senderId = frame.getSenderId();
         Long receiverId = frame.getReceiverId();
+        String content = frame.getContent();
+        LocalDateTime sendTime = LocalDateTime.now();
+        String sequenceId = frame.getSequenceId();
         Channel senderChannel = ctx.channel();
+        Channel receiverChannel = UserChannelManager.getChannel(receiverId);
         if(FrameType.PRIVATE_CHAT.type.equals(frame.getType())) {
-            ChatMessageHandler.log.info("处理私聊消息->{}",frame);
             //私聊消息
+            ChatMessageHandler.log.info("处理私聊消息->{}",frame);
+            //好友关系校验
+            Boolean isFriend = checkRelationShip(frame, senderChannel);
+            if(!isFriend) {
+                return;
+            }
+            Boolean needPersistence = true;
             //判断对方是否处于在线状态
-            Channel receiverChannel = UserChannelManager.getChannel(receiverId);
             if(receiverChannel == null) {
-                ChatMessageHandler.log.info("用户处于离线状态");
                 //用户处于离线状态->>>应该使用个推\JPush\小米推送等进行消息推送
             } else {
-                ChatMessageHandler.sendPrivateMessage(frame, senderChannel, receiverChannel);
+                //WebSocket推送消息
+                //如果消息推送失败会将needPersistence置为false
+                //即需要重新进行消息的发送
+                //不需要消息的持久化
+                needPersistence = ChatMessageHandler.sendPrivateMessage(frame, senderChannel, receiverChannel);
+            }
+            //将消息进行持久化
+            if(needPersistence) {
+                PrivateChatMessage message = PrivateChatMessage.builder()
+                                                               .senderId(senderId)
+                                                               .content(content)
+                                                               .sendTime(sendTime)
+                                                               .receiverId(receiverId)
+                                                               .type(MessageType.TEXT.getCode())
+                                                               .alreadyRead(MessageReadEnum.UNREAD.getStatus()).build();
+                message.setId(sequenceId);
+                messagePersistence(message);
             }
         } else if(FrameType.GROUP_CHAT.type.equals(frame.getType())) {
             //群聊消息
+        } else if(FrameType.PRIVATE_FILE_MESSAGE.type.equals(frame.getType())) {
+            Boolean isFriend = checkRelationShip(frame, senderChannel);
+            if(!isFriend) {
+                return;
+            }
+            //私信文件传输
+            Map<String, String> extend = frame.getExtend();
+            //Map中需要包含两个信息 fileName/size
+            int requestSize = 2;
+            if(extend == null || extend.size() < requestSize || extend.get("fileName") == null || extend.get("size") == null) {
+                return;
+            }
+            Boolean needPersistence = true;
+            if(receiverChannel == null) {
+                //不在线-暂时不做处理
+            }else {
+                //在线-WebSocket发送消息
+                needPersistence = sendPrivateMessage(frame, senderChannel, receiverChannel);
+            }
+            if(needPersistence) {
+                PrivateChatMessage message = PrivateChatMessage.builder()
+                                                             .senderId(senderId)
+                                                             .sendTime(LocalDateTime.now())
+                                                             .receiverId(receiverId)
+                                                             .alreadyRead(MessageReadEnum.UNREAD.getStatus())
+                                                             .type(MessageType.FILE.getCode())
+                                                             .extendName(extend.get("fileName"))
+                                                             .extendSize(extend.get("size"))
+                                                             .build();
+                message.setId(frame.getSequenceId());
+                messagePersistence(message);
+            }
         } else if(FrameType.KEEPALIVE.type.equals(frame.getType())) {
             //心跳包
         } else if(FrameType.CLOSE.type.equals(frame.getType())) {
@@ -90,62 +148,61 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
         }
     }
 
-    private static void sendPrivateMessage(Frame frame,
-                                  Channel senderChannel,
-                                  Channel receiverChannel) {
-        ChatMessageHandler.log.info("用户处于在线状态");
-        //=======================================>>>需要验证是否是好友<<<============================================
-        ChatMessageHandler.log.error("=======================================>>>请注意需要验证是否是好友<<<============================================");
+    private static Boolean checkRelationShip(Frame frame, Channel senderChannel) {
         Long senderId = frame.getSenderId();
-        Long receiverId = frame.getSenderId();
-        String content = frame.getContent();
-        LocalDateTime sendTime = LocalDateTime.now();
+        Long receiverId = frame.getReceiverId();
         String sequenceId = frame.getSequenceId();
+        String content = frame.getContent();
         UserService userService = (UserService) SpringBeanUtil.getBean(UserServiceImpl.class);
         HashMap<String, Object> map = userService.preConditionSearchUser(senderId, receiverId);
         Integer status = (Integer) map.get("status");
-        //不为好友关系
+        //检查是否为好友关系
         if(!SearchUserStatusEnum.ALREADY_FRIENDS.status.equals(status)) {
+            //非好友关系
             senderChannel.writeAndFlush(new TextWebSocketFrame(
-                    new Gson().toJson(new Frame(sequenceId, senderId, content, receiverId, FrameType.AUTHORIZATION_WARNING_MESSAGE, null))
+                    new Gson().toJson(new Frame(sequenceId, senderId, content, receiverId, FrameType.AUTHORIZATION_WARNING_MESSAGE.getType(), null))
             ));
+            return false;
         }
-        //将消息进行持久化
-        //标记消息为未读取
-        PrivateChatMessage message = PrivateChatMessage.builder()
-                                                       .senderId(senderId)
-                                                       .receiverId(receiverId)
-                                                       .content(content)
-                                                       .sendTime(sendTime)
-                                                       .alreadyRead(MessageReadEnum.UNREAD.getStatus()).build();
-        message.setId(sequenceId);
-        ChatService chatService = (ChatService) SpringBeanUtil.getBean(ChatServiceImpl.class);
+        return true;
+    }
+
+    private static Boolean sendPrivateMessage(Frame frame, Channel senderChannel, Channel receiverChannel) {
+        Long senderId = frame.getSenderId();
+        Long receiverId = frame.getSenderId();
+        String content = frame.getContent();
+        String sequenceId = frame.getSequenceId();
         try {
-            chatService.sendPrivateMessage(message);
-            ChatMessageHandler.log.info("消息序列号为:{}发送成功,消息内容为{}", sequenceId, message);
             Frame senderResponseFrame = Frame.builder()
                                              .sequenceId(sequenceId)
-                                             .type(FrameType.PRIVATE_CHAT_SUCCESS_RESPONSE)
+                                             .type(FrameType.PRIVATE_CHAT_SUCCESS_RESPONSE.getType())
                                              .senderId(senderId)
-                                             .receiverId(receiverId).build();
+                                             .receiverId(receiverId)
+                                             .extend(frame.getExtend()).build();
+            receiverChannel.writeAndFlush(
+                    new TextWebSocketFrame(new Gson().toJson(frame)));
             senderChannel.writeAndFlush(
                     new TextWebSocketFrame(new Gson().toJson(senderResponseFrame))
             );
-            receiverChannel.writeAndFlush(
-                    new TextWebSocketFrame(new Gson().toJson(frame)));
-
+            return true;
         } catch(Exception e) {
-            ChatMessageHandler.log.error("消息发送失败,原因: {}",e);
+            ChatMessageHandler.log.error("消息发送失败,原因: {}", e);
             //消息发送失败
             Frame senderResponseFrame = Frame.builder()
                                              .sequenceId(sequenceId)
-                                             .type(FrameType.PRIVATE_CHAT_FAIL_RESPONSE)
+                                             .type(FrameType.PRIVATE_CHAT_FAIL_RESPONSE.getType())
                                              .senderId(senderId)
                                              .receiverId(receiverId).build();
             senderChannel.writeAndFlush(
                     new TextWebSocketFrame(new Gson().toJson(senderResponseFrame))
             );
+            return false;
         }
+    }
+
+    private static void messagePersistence(PrivateChatMessage message){
+        ChatService chatService = (ChatService) SpringBeanUtil.getBean(ChatServiceImpl.class);
+        chatService.sendPrivateMessage(message);
     }
 
     @Override

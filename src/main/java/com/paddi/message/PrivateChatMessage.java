@@ -2,6 +2,7 @@ package com.paddi.message;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -31,6 +32,15 @@ public class PrivateChatMessage extends AbstractMessage {
 
     @TableField(value = "is_read")
     private Boolean alreadyRead;
+
+    @ApiModelProperty("消息类型 0-文本消息 1-文件")
+    private Integer type;
+
+    @ApiModelProperty("文件名")
+    private String extendName;
+
+    @ApiModelProperty("文件大小")
+    private String extendSize;
 
     @Override
     public int getMessageType() {
