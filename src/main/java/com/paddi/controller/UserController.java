@@ -9,12 +9,17 @@ import com.paddi.entity.vo.LoginVo;
 import com.paddi.entity.vo.RegisterVo;
 import com.paddi.entity.vo.UserVo;
 import com.paddi.service.UserService;
+import com.paddi.utils.FileSuffixVerificationUtil;
+import com.paddi.utils.MinioUtil;
 import com.paddi.utils.mapstruct.UserMapStruct;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <p>
@@ -30,6 +35,12 @@ public class UserController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private MinioUtil minioUtil;
+
+    @Value("${minio.profileBucket}")
+    private String profileBucketName;
 
     @PostMapping("/register")
     @ResponseBody
@@ -57,6 +68,26 @@ public class UserController {
         }
         User user = (User) condition.get("user");
         return Result.success(UserMapStruct.USER_MAPPING.userToUserVo(user));
+    }
+
+    @PostMapping("/uploadProfile")
+    @ResponseBody
+    @ApiOperation("上传头像")
+    public Result uploadProfile(Long id, MultipartFile file) {
+        try {
+            String name = file.getOriginalFilename();
+            String suffix = name.substring(name.lastIndexOf(".") + 1);
+            if(!FileSuffixVerificationUtil.isPhoto(suffix)) {
+               return Result.fail(HttpStatusCode.REQUEST_PARAM_ERROR, "图片后缀不合法,上传头像失败!");
+            }
+            Map<String, String> result = minioUtil.upload(file, profileBucketName);
+            String profile = result.get("fileName");
+            User user = userService.uploadProfile(id, profile);
+            return Result.success(UserMapStruct.USER_MAPPING.userToUserVo(user));
+        } catch(Exception e) {
+            e.printStackTrace();
+            return Result.fail(HttpStatusCode.ERROR, "头像上传失败");
+        }
     }
 }
 

@@ -1,5 +1,6 @@
-package com.paddi.service;
+package com.paddi.service.impl;
 
+import com.paddi.service.FileService;
 import org.springframework.stereotype.Service;
 
 /**
@@ -8,5 +9,5 @@ import org.springframework.stereotype.Service;
  * @CreatedTime: 2022年11月30日 20:36:37
  */
 @Service
-public class FileServiceImpl implements FileService{
+public class FileServiceImpl implements FileService {
 }

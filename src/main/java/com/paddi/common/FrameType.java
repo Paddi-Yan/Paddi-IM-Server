@@ -16,8 +16,10 @@ public enum FrameType {
     PRIVATE_CHAT_FAIL_RESPONSE(7, "私信消息发送失败"),
     UNREAD_PRIVATE_MESSAGE(8, "未读消息"),
     AUTHORIZATION_WARNING_MESSAGE(9, "非好友关系,无权限发送消息"),
-    PRIVATE_FILE_MESSAGE(10, "私信文件传输")
+    PRIVATE_FILE_MESSAGE(10, "私信文件传输"),
+    FRIEND_LIST(11, "好友列表"),
 
+    READ_PRIVATE_MESSAGE(12, "标记为已读私聊消息")
     ;
 
     public final Integer type;

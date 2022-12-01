@@ -14,4 +14,8 @@
         <result column="extend_name" property="extendName"/>
         <result column="extend_size" property="extendSize"/>
     </resultMap>
+
+    <update id="signMessageAlreadyRead" parameterType="Long">
+        update set is_read = 1 from sys_private_chat_message where send_id = ${friendId} and receiver_id = ${userId};
+    </update>
 </mapper>

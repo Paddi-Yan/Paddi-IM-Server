@@ -47,4 +47,11 @@ public class ChatServiceImpl implements ChatService {
             channel.writeAndFlush(new TextWebSocketFrame(new Gson().toJson(frame)));
         }
     }
+
+    @Override
+    public void signMessageAlreadyRead(Map<String, Long> extend) {
+        Long userId = extend.get("userId");
+        Long friendId = extend.get("friendId");
+        privateChatMapper.signMessageAlreadyRead(userId, friendId);
+    }
 }

@@ -47,4 +47,8 @@ public class UserChannelManager {
         log.info("移除连接用户{}与服务器的连接{}",senderId, channel);
         return senderId;
     }
+
+    public static Boolean contains(Long userId) {
+        return USER_CHANNEL_MAP.containsKey(userId);
+    }
 }

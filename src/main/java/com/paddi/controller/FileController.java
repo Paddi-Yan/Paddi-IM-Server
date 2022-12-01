@@ -5,6 +5,7 @@ import com.paddi.common.Result;
 import com.paddi.utils.MinioUtil;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,14 +26,18 @@ public class FileController {
     @Resource
     private MinioUtil minioUtil;
 
+    @Value("${minio.fileBucket}")
+    private String fileBucketName;
+
     @PostMapping("/upload")
     @ResponseBody
     @ApiOperation("上传文件")
     public Result upload(@RequestParam MultipartFile file) {
         try {
-            String fileName = minioUtil.upload(file);
-            return Result.success(fileName);
+            Map<String, String> result = minioUtil.upload(file, fileBucketName);
+            return Result.success(result);
         } catch(Exception e) {
+            e.printStackTrace();
             return Result.fail(HttpStatusCode.ERROR, "文件上传出现错误");
         }
     }
@@ -40,8 +45,7 @@ public class FileController {
     @GetMapping("/download/{fileName}")
     @ResponseBody
     @ApiOperation("根据文件名下载文件")
-    public Result download( HttpServletResponse response, @PathVariable String fileName) {
-        Map<String, String> result = minioUtil.download(response, fileName);
-        return result != null ? Result.success(result) : Result.fail(HttpStatusCode.NO_CONTENT, "文件不存在下载失败");
+    public void download(HttpServletResponse response, @PathVariable String fileName) {
+        minioUtil.download(response, fileName, fileBucketName);
     }
 }

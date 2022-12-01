@@ -2,11 +2,11 @@ package com.paddi.utils;
 
 import io.minio.*;
 import io.minio.errors.*;
+import io.minio.http.Method;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,9 +31,6 @@ public class MinioUtil {
     @Autowired
     private MinioClient client;
 
-    @Value("${minio.bucket}")
-    private String bucketName;
-
     @SneakyThrows
     private void createBucket(String bucketName) {
         BucketExistsArgs bucketExistsArgs = BucketExistsArgs.builder().bucket(bucketName).build();
@@ -42,27 +39,30 @@ public class MinioUtil {
         }
     }
 
-    public String upload(MultipartFile file) throws Exception {
+    public Map<String, String> upload(MultipartFile file, String bucketName) throws Exception {
         if(file == null || file.getSize() == 0) {
             throw new Exception("文件为空或者损坏,上传失败");
         }
         createBucket(bucketName);
         String originalFilename = file.getOriginalFilename();
-
+        Map<String, String> result = new HashMap<>(2);
         String newFileName = bucketName + "-" + System.currentTimeMillis() + "-" + originalFilename;
         InputStream in = null;
         try {
             in = file.getInputStream();
-            client.putObject(PutObjectArgs.builder()
-                                          .bucket(bucketName)
-                                          .contentType(file.getContentType())
-                                          .object(newFileName)
-                                          .stream(in, in.available(), -1).build());
+            client.putObject(PutObjectArgs.builder().bucket(bucketName)
+                                                    .contentType(file.getContentType())
+                                                    .object(newFileName)
+                                                    .stream(in, in.available(), -1)
+                                                    .build());
             MinioUtil.log.info("文件上传成功:{}", newFileName);
             if(in != null) {
                 in.close();
             }
-            return newFileName;
+            result.put("fileName", newFileName);
+            String size = FileSizeUnitUtil.readableFileSize(file.getSize());
+            result.put("size", size);
+            return result;
         } catch(IOException | ServerException | InsufficientDataException | ErrorResponseException |
                 NoSuchAlgorithmException | InvalidKeyException | InvalidResponseException | XmlParserException |
                 InternalException e) {
@@ -81,10 +81,9 @@ public class MinioUtil {
     }
 
 
-    public Map<String, String> download(HttpServletResponse response, String fileName) {
+    public Boolean download(HttpServletResponse response, String fileName, String bucketName) {
         StatObjectResponse stat = null;
         GetObjectResponse in = null;
-        HashMap<String, String> result = new HashMap<>(2);
         try{
             stat = client.statObject(StatObjectArgs.builder()
                                                    .bucket(bucketName)
@@ -96,20 +95,19 @@ public class MinioUtil {
             String size = FileSizeUnitUtil.readableFileSize(stat.size());
             log.info("下载文件:{}, 文件大小:{}",fileName, size);
             if(in == null) {
-                return null;
+                return false;
             }
             response.setContentType(stat.contentType());
-            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8")+"/size="+size);
+            response.setCharacterEncoding("UTF-8");
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "UTF-8"));
             IOUtils.copy(in, response.getOutputStream());
-            result.put("fileName", fileName);
-            result.put("size", size);
-            return result;
+            return true;
         } catch(ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException |
                 InvalidResponseException | IOException | NoSuchAlgorithmException | ServerException |
                 XmlParserException e) {
             e.printStackTrace();
             MinioUtil.log.warn("文件下载失败");
-            return null;
+            return false;
         } finally {
             if(in != null) {
                 try {
@@ -118,6 +116,20 @@ public class MinioUtil {
                     e.printStackTrace();
                 }
             }
+        }
+    }
+
+    public String getPreviewPath(String fileName, String bucketName) {
+        try {
+            createBucket(bucketName);
+            String url = client.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder()
+                                                                              .bucket(bucketName)
+                                                                              .object(fileName).method(Method.GET).build());
+            return url;
+        } catch(ErrorResponseException | InsufficientDataException | InternalException | InvalidKeyException |
+                InvalidResponseException | IOException | NoSuchAlgorithmException | XmlParserException |
+                ServerException e) {
+            throw new RuntimeException(e);
         }
     }
 }

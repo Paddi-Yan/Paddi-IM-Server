@@ -33,4 +33,6 @@ public interface UserService extends IService<User> {
     HashMap<String, Object> preConditionSearchUser(Long id, String searchName);
 
     HashMap<String, Object> preConditionSearchUser(Long id, Long otherId);
+
+    User uploadProfile(Long id, String profile);
 }

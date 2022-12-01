@@ -14,6 +14,7 @@ import com.paddi.mapper.FriendMapper;
 import com.paddi.mapper.UserMapper;
 import com.paddi.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +42,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Resource
     private FriendMapper friendMapper;
 
+    @Value("${profile.suffix}")
+    private String PROFILE_SUFFIX;
+
+    private static final String DEFAULT_PROFILE = "profile.png";
+
     @Override
     public boolean checkUserNameIsExit(String username) {
         Integer count = userMapper.selectCount(new QueryWrapper<User>().eq("username", username));
@@ -55,6 +61,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         User user = User.builder().gender(GenderEnum.getGenderEnum(registerVo.getGender()).get())
                         .username(registerVo.getUsername())
                         .password(registerVo.getPassword())
+                        .profile(PROFILE_SUFFIX + DEFAULT_PROFILE)
                         .registerTime(LocalDateTime.now()).build();
         int insert = userMapper.insert(user);
         if(insert == 1) {
@@ -89,6 +96,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public HashMap<String, Object> preConditionSearchUser(Long id, Long otherId) {
         User user = userMapper.selectById(otherId);
         return check(id, user);
+    }
+
+    @Override
+    public User uploadProfile(Long id, String profile) {
+        User user = userMapper.selectById(id);
+        if(user == null) {
+            throw new RequestParamValidationException(ImmutableMap.of("id",id));
+        }
+        user.setProfile(PROFILE_SUFFIX + profile);
+        userMapper.updateById(user);
+        return user;
     }
 
     /**

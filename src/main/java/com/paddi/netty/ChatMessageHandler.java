@@ -5,13 +5,18 @@ import com.paddi.common.FrameType;
 import com.paddi.common.MessageReadEnum;
 import com.paddi.common.MessageType;
 import com.paddi.common.SearchUserStatusEnum;
+import com.paddi.entity.User;
+import com.paddi.entity.vo.UserVo;
 import com.paddi.message.Frame;
 import com.paddi.message.PrivateChatMessage;
 import com.paddi.service.ChatService;
+import com.paddi.service.FriendService;
 import com.paddi.service.UserService;
 import com.paddi.service.impl.ChatServiceImpl;
+import com.paddi.service.impl.FriendServiceImpl;
 import com.paddi.service.impl.UserServiceImpl;
 import com.paddi.utils.SpringBeanUtil;
+import com.paddi.utils.mapstruct.UserMapStruct;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -25,8 +30,7 @@ import io.netty.util.concurrent.GlobalEventExecutor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @Project: Paddi-IM-Server
@@ -54,9 +58,35 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
             } else {
                 ctx.close();
             }
-            //连接建立成功查询并返回未读消息
+            //TODO 连接建立成功查询并返回未读消息
             ChatService chatService = (ChatService) SpringBeanUtil.getBean(ChatServiceImpl.class);
             chatService.sendUnreadMessage(ctx.channel(), userId);
+            //TODO 返回当前在线的好友列表
+            FriendService friendService = (FriendService) SpringBeanUtil.getBean(FriendServiceImpl.class);
+            List<User> allFriendList = friendService.getFriendList(userId);
+            List<UserVo> onlineFriendList = new ArrayList<>();
+            List<UserVo> notOnlineFriendList = new ArrayList<>();
+            Iterator<User> iterator = allFriendList.iterator();
+            if(iterator.hasNext()) {
+                User friend = iterator.next();
+                UserVo friendVo = UserMapStruct.USER_MAPPING.userToUserVo(friend);
+                //筛选不在线的好友
+                if(UserChannelManager.contains(friend.getId())) {
+                    //在线
+                    onlineFriendList.add(friendVo);
+                }else {
+                    //不在线
+                    notOnlineFriendList.add(friendVo);
+                }
+            }
+            HashMap<String, List> friendList = new HashMap<>();
+            friendList.put("online", onlineFriendList);
+            friendList.put("notOnline", notOnlineFriendList);
+            Frame frame = Frame.builder().extend(friendList).type(FrameType.FRIEND_LIST.getType()).build();
+            ctx.channel().writeAndFlush(new TextWebSocketFrame(
+                    new Gson().toJson(frame)
+            ));
+            log.info("推送好友列表成功");
         }
     }
 
@@ -76,7 +106,7 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
         Channel senderChannel = ctx.channel();
         Channel receiverChannel = UserChannelManager.getChannel(receiverId);
         if(FrameType.PRIVATE_CHAT.type.equals(frame.getType())) {
-            //私聊消息
+            //TODO 私聊消息
             ChatMessageHandler.log.info("处理私聊消息->{}",frame);
             //好友关系校验
             Boolean isFriend = checkRelationShip(frame, senderChannel);
@@ -106,14 +136,27 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
                 message.setId(sequenceId);
                 messagePersistence(message);
             }
+        } else if(FrameType.READ_PRIVATE_MESSAGE.type.equals(frame.getType())) {
+            //TODO 标记私聊消息为已读消息
+            //拓展信息Map中必须包含用户ID和好友ID
+            Map extend = frame.getExtend();
+            if(extend == null || extend.isEmpty() || !extend.containsKey("userId")
+                    || !extend.containsKey("friendId") || extend.get("userId") == null || extend.get("friendId") == null ) {
+                return;
+            }
+            ChatService chatService = (ChatService) SpringBeanUtil.getBean(ChatServiceImpl.class);
+            //将该用户与该好友的所有消息标记为已读
+            chatService.signMessageAlreadyRead(extend);
         } else if(FrameType.GROUP_CHAT.type.equals(frame.getType())) {
-            //群聊消息
+            //TODO 群聊消息
         } else if(FrameType.PRIVATE_FILE_MESSAGE.type.equals(frame.getType())) {
+            //TODO 私信文件传输
+            //检查是否是好友关系
             Boolean isFriend = checkRelationShip(frame, senderChannel);
             if(!isFriend) {
                 return;
             }
-            //私信文件传输
+            //获取文件传输中的拓展信息
             Map<String, String> extend = frame.getExtend();
             //Map中需要包含两个信息 fileName/size
             int requestSize = 2;
@@ -141,9 +184,9 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
                 messagePersistence(message);
             }
         } else if(FrameType.KEEPALIVE.type.equals(frame.getType())) {
-            //心跳包
+            //TODO 心跳包
         } else if(FrameType.CLOSE.type.equals(frame.getType())) {
-            //关闭连接
+            //TODO 关闭连接
             UserChannelManager.remove(senderId);
         }
     }
