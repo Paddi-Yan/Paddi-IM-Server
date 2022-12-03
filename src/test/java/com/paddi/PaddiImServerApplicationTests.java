@@ -1,6 +1,5 @@
 package com.paddi;
 
-import com.paddi.common.FriendRequestStatusEnum;
 import com.paddi.common.GenderEnum;
 import com.paddi.entity.FriendAddRecord;
 import com.paddi.entity.User;
@@ -11,6 +10,7 @@ import com.paddi.netty.ChatMessageHandler;
 import com.paddi.service.FriendAddRequestService;
 import com.paddi.service.FriendService;
 import com.paddi.service.UserService;
+import com.paddi.utils.MinioUtil;
 import com.paddi.utils.mapstruct.UserMapStruct;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -49,7 +49,6 @@ class PaddiImServerApplicationTests {
     void friendTest() {
         List<User> userList = friendService.searchFriend("Pad", 1596190150966370306L);
         List<UserVo> userVoList = UserMapStruct.USER_MAPPING.userListToUserVoList(userList);
-        userVoList.forEach(System.out :: println);
 
     }
 
@@ -92,7 +91,12 @@ class PaddiImServerApplicationTests {
     }
 
     public static void main(String[] args) {
-        String msgByKey = FriendRequestStatusEnum.getMsgByKey(4);
-        System.out.println(msgByKey);
+        String name = "js.png";
+        String suffix = name.substring(name.lastIndexOf("."));
+        System.out.println(suffix);
     }
+
+    @Resource
+    private MinioUtil minioUtil;
+
 }

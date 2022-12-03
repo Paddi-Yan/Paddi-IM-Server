@@ -34,6 +34,10 @@ public class WebSocketParamHandler extends SimpleChannelInboundHandler<FullHttpR
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest request) throws Exception {
         String uri = request.uri();
         WebSocketParamHandler.log.info("WebSocketParamHandler.channelRead0拦截到URL: {}", uri);
+        if(!uri.startsWith("/ws?userId=")) {
+            log.warn("WebSocketParamHandler.channelRead0拦截到恶意请求: {}", uri);
+            return;
+        }
         Map<CharSequence, CharSequence> queryMap = UrlBuilder.ofHttp(uri).getQuery().getQueryMap();
         //取出URL中的userId参数
         AttributeKey<String> attributeKey = AttributeKey.valueOf("userId");

@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
     @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt){
         if(evt instanceof IdleStateEvent) {
             IdleStateEvent event = (IdleStateEvent) evt;
             if(event.state() == IdleState.READER_IDLE) {
@@ -26,8 +26,14 @@ public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
                 HeartBeatHandler.log.info("HeartBeatHandler#userEventTriggered 进入了读写空闲,即将关闭连接....");
                 HeartBeatHandler.log.info("HeartBeatHandler#userEventTriggered 关闭连接前,当前连接数为：{}", ChatMessageHandler.clients.size());
                 Channel channel = ctx.channel();
-                Long userId = UserChannelManager.remove(channel);
-                channel.close();
+                Long userId = null;
+                try {
+                    userId = UserChannelManager.remove(channel);
+                    channel.close();
+                } catch(Exception e) {
+                    log.warn(e.getMessage());
+                }
+
                 HeartBeatHandler.log.info("HeartBeatHandler#userEventTriggered userId为{}的用户连接被关闭", userId);
                 HeartBeatHandler.log.info("HeartBeatHandler#userEventTriggered 关闭连接后,当前连接数为：{}", ChatMessageHandler.clients.size());
             }
