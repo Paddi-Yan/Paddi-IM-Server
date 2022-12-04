@@ -34,6 +34,13 @@ public class Result {
         return result;
     }
 
+    public static Result success(Object data, String message) {
+        Result result = new Result();
+        result.setCode(HttpStatusCode.SUCCESS.getCode());
+        result.setData(data);
+        result.setMessage(message);
+        return result;
+    }
 
     public static Result fail(HttpStatusCode httpStatusCode) {
         Result result = new Result();

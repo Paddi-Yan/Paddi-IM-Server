@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.paddi.common.GenderEnum;
 import com.paddi.common.SearchUserStatusEnum;
 import com.paddi.entity.User;
+import com.paddi.entity.vo.LoginVo;
 import com.paddi.entity.vo.RegisterVo;
 import com.paddi.exception.AuthenticationException;
 import com.paddi.exception.BaseException;
@@ -17,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
@@ -107,6 +109,35 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setProfile(PROFILE_SUFFIX + profile);
         userMapper.updateById(user);
         return user;
+    }
+
+    @Override
+    public User loginOrRegister(LoginVo loginVo) {
+        String password = loginVo.getPassword();
+        String username = loginVo.getUsername();
+        if(loginVo == null || StringUtils.isEmpty(username) || StringUtils.isEmpty(password)) {
+            throw new RequestParamValidationException();
+        }
+        User user = searchUser(username);
+        if(user != null) {
+            //登录
+            //校验密码是否正确
+            if(!user.getPassword().equals(password)) {
+                throw new AuthenticationException(ImmutableMap.of("password", password));
+            }
+            user.setLastLoginTime(LocalDateTime.now());
+            userMapper.updateById(user);
+            return user;
+        }else {
+            //注册
+            User registerInfo = User.builder().username(username)
+                             .gender(GenderEnum.UNKNOWN)
+                             .registerTime(LocalDateTime.now())
+                             .password(password)
+                             .profile(PROFILE_SUFFIX + DEFAULT_PROFILE).build();
+            userMapper.insert(registerInfo);
+            return registerInfo;
+        }
     }
 
     /**

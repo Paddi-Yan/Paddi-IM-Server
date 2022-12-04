@@ -56,6 +56,18 @@ public class UserController {
         return Result.success(userService.login(loginVo.getUsername(), loginVo.getPassword()));
     }
 
+    @ResponseBody
+    @PostMapping("/common")
+    public Result loginOrRegister(@RequestBody LoginVo loginVo) {
+        User user = userService.loginOrRegister(loginVo);
+        UserVo userVo = UserMapStruct.USER_MAPPING.userToUserVo(user);
+        if(user.getLastLoginTime() == null) {
+            return Result.success(userVo, "新用户注册成功!");
+        }else {
+            return Result.success(userVo, "用户登录成功!");
+        }
+    }
+
     @GetMapping("/search")
     @ResponseBody
     @ApiOperation(value = "根据用户名查询用户", notes = "根据用户名完全匹配-不支持模糊查询-查询结果只有一个或零个")

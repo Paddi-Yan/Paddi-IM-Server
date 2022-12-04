@@ -30,4 +30,6 @@ public class UserVo implements Serializable {
 
     private String profile;
 
+    private Boolean enabled;
+
 }

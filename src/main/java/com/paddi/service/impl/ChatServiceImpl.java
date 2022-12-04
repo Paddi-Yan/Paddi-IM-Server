@@ -40,8 +40,10 @@ public class ChatServiceImpl implements ChatService {
                 .eq("receiver_id", userId).eq("is_read", MessageReadEnum.UNREAD.getStatus())
                 .orderByDesc("send_time"));
         if(!messageList.isEmpty()) {
-            Map<Long, List<PrivateChatMessage>> messageMap = messageList.stream()
-                                                               .collect(Collectors.groupingBy(PrivateChatMessage::getSenderId));
+            /*Map<Long, List<PrivateChatMessage>> messageMap = messageList.stream()
+                                                               .collect(Collectors.groupingBy(PrivateChatMessage::getSenderId));*/
+            Map<Long, Long> messageMap = messageList.stream()
+                                                 .collect(Collectors.groupingBy(PrivateChatMessage :: getSenderId, Collectors.counting()));
             Frame frame = Frame.builder().receiverId(userId).type(FrameType.UNREAD_PRIVATE_MESSAGE.getType())
                                .extend(messageMap).build();
             channel.writeAndFlush(new TextWebSocketFrame(new Gson().toJson(frame)));

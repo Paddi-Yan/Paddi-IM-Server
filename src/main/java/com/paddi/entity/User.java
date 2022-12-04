@@ -43,5 +43,7 @@ public class User implements Serializable {
 
     private LocalDateTime lastLoginTime;
 
+    private Boolean enabled;
+
 
 }

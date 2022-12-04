@@ -15,7 +15,10 @@ import java.util.stream.Collectors;
  */
 public enum GenderEnum {
     MALE(1, "男"),
-    FEMALE(2, "女");
+    FEMALE(2, "女"),
+    UNKNOWN(3, "暂未设定")
+
+    ;
 
 
     private int code;

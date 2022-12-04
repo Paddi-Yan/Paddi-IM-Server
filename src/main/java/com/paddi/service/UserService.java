@@ -2,6 +2,7 @@ package com.paddi.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.paddi.entity.User;
+import com.paddi.entity.vo.LoginVo;
 import com.paddi.entity.vo.RegisterVo;
 
 import java.util.HashMap;
@@ -35,4 +36,6 @@ public interface UserService extends IService<User> {
     HashMap<String, Object> preConditionSearchUser(Long id, Long otherId);
 
     User uploadProfile(Long id, String profile);
+
+    User loginOrRegister(LoginVo loginVo);
 }
