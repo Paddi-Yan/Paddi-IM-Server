@@ -69,7 +69,7 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
         Integer result = friendAddRequestService.getBaseMapper().selectCount(new QueryWrapper<FriendAddRecord>()
                 .eq("sender_id", userVo.getId())
                 .eq("receiver_id", receiveUserVo.getId())
-                .eq("accepted", FriendRequestStatusEnum.NOT_HANDLE.status));
+                .eq("accepted", FriendRequestStatusEnum.NOT_HANDLE.code));
         if(result >= 1) {
             return false;
         }

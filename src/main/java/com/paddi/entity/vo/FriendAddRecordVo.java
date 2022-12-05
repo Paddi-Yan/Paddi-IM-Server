@@ -20,7 +20,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
-@ApiModel("好友请求")
+@ApiModel("FriendAddRecordVo-好友添加记录对象")
 public class FriendAddRecordVo implements Serializable {
     private static final long serialVersionUID = 5132272992369419317L;
 
@@ -37,7 +37,7 @@ public class FriendAddRecordVo implements Serializable {
     private Long receiverId;
 
     @ApiModelProperty("请求处理状态 0：未处理 -1：拒绝 1：接收")
-    private Boolean accepted;
+    private Integer status;
 
     @ApiModelProperty("好友信息")
     private UserVo friendInfo;

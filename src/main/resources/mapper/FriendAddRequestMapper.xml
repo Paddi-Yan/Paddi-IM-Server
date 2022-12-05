@@ -9,15 +9,15 @@
         <result column="receiver_id" property="receiverId"/>
         <result column="send_time" property="sendTime"/>
         <result column="handle_time" property="handleTime"/>
-        <result column="accepted" property="accepted"/>
+        <result column="status" property="status"/>
     </resultMap>
 
     <select id="selectList" parameterType="Long" resultType="FriendAddRecord">
-        select id, sender_id, receiver_id, send_time, accepted, remark
+        select id, sender_id, receiver_id, send_time, status, remark
         from sys_friend_add_request
         where sender_id = ${id}
         union all
-        select id, sender_id, receiver_id, send_time, accepted, remark
+        select id, sender_id, receiver_id, send_time, status, remark
         from sys_friend_add_request
         where receiver_id = ${id};
     </select>

@@ -3,10 +3,12 @@ package com.paddi;
 import com.paddi.common.GenderEnum;
 import com.paddi.entity.FriendAddRecord;
 import com.paddi.entity.User;
+import com.paddi.entity.vo.ChatHistoryVo;
 import com.paddi.entity.vo.UserVo;
 import com.paddi.mapper.FriendMapper;
 import com.paddi.mapper.UserMapper;
 import com.paddi.netty.ChatMessageHandler;
+import com.paddi.service.ChatService;
 import com.paddi.service.FriendAddRequestService;
 import com.paddi.service.FriendService;
 import com.paddi.service.UserService;
@@ -50,6 +52,14 @@ class PaddiImServerApplicationTests {
         List<User> userList = friendService.searchFriend("Pad", 1596190150966370306L);
         List<UserVo> userVoList = UserMapStruct.USER_MAPPING.userListToUserVoList(userList);
 
+    }
+
+    @Resource
+    private ChatService chatService;
+    @Test
+    void chatMessageHistory() {
+        ChatHistoryVo chatHistoryVo = new ChatHistoryVo(1L, 2L, 1L, 2L);
+        chatService.getPrivateChatHistory(chatHistoryVo).forEach(System.out :: println);
     }
 
     @Resource

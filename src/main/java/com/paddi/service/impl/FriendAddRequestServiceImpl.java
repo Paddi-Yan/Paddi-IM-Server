@@ -59,19 +59,20 @@ public class FriendAddRequestServiceImpl extends ServiceImpl<FriendAddRequestMap
         checkUserById(userId);
         FriendAddRecord friendAddRecord = friendAddRequestMapper.selectById(id);
         //接收请求的用户ID不匹配 || 请求已经处理过了
-        if(!friendAddRecord.getReceiverId().equals(userId) || !FriendRequestStatusEnum.NOT_HANDLE.getStatus()
-                                                                                                 .equals(friendAddRecord.getAccepted())) {
+        if(friendAddRecord == null ||!friendAddRecord.getReceiverId().equals(userId)
+                || !FriendRequestStatusEnum.NOT_HANDLE.equals(friendAddRecord.getStatus())) {
             throw new RequestParamValidationException(ImmutableMap.of("userId", userId, "requestStatus", friendAddRecord.getReceiverId()));
         }
-        if(!FriendRequestStatusEnum.REFUSED.status.equals(type) || !FriendRequestStatusEnum.ACCEPTED.status.equals(type)) {
+        if(!FriendRequestStatusEnum.REFUSED.getCode().equals(type) && !FriendRequestStatusEnum.ACCEPTED.getCode().equals(type)) {
             throw new RequestParamValidationException(ImmutableMap.of("type", type));
         }
+
         //好友请求
         friendAddRecord.setHandleTime(LocalDateTime.now());
-        friendAddRecord.setAccepted(FriendRequestStatusEnum.ACCEPTED.getStatus().equals(type));
+        friendAddRecord.setStatus(FriendRequestStatusEnum.getFriendRequestStatusEnum(type).get());
         friendAddRequestMapper.updateById(friendAddRecord);
         //拒绝好友请求
-        if(!friendAddRecord.getAccepted()) {
+        if(friendAddRecord.getStatus().equals(FriendRequestStatusEnum.REFUSED)) {
             return FriendRequestStatusEnum.REFUSED;
         }
         //同意好友请求更新好友列表

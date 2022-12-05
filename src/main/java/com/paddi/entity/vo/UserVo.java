@@ -2,6 +2,7 @@ package com.paddi.entity.vo;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
+import io.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,6 +19,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
+@ApiModel("UserVo-用户信息对象")
 public class UserVo implements Serializable {
     private static final long serialVersionUID = -2205229430625475546L;
 

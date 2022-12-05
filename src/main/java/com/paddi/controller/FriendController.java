@@ -94,7 +94,9 @@ public class FriendController {
 
     @ResponseBody
     @GetMapping("/getRequestList")
-    @ApiOperation("获取好友添加列表")
+    @ApiOperation(value = "获取好友添加列表",notes = "NOT_HANDLE(1: 好友请求未处理\"),\n" +
+            "    REFUSED(2, \"好友请求已经拒绝\"),\n" +
+            "    ACCEPTED(3, \"好友请求已经接受\");")
     public Result getAddFriendRequestList(@RequestParam Long id) {
         List<FriendAddRecord> requestList = friendAddRequestService.getList(id);
         if(requestList.isEmpty()) {
@@ -116,7 +118,7 @@ public class FriendController {
 
     @ResponseBody
     @PostMapping("/handleRequest")
-    @ApiOperation(value = "处理好友请求", notes = " -1：拒绝添加 1：接收好友请求")
+    @ApiOperation(value = "处理好友请求", notes = "2：拒绝添加 3：接收好友请求")
     public Result handleRequest(@RequestParam Long id, @RequestParam Long userId, @RequestParam Integer type) {
         return Result.success(friendAddRequestService.handleRequest(id, userId, type));
     }

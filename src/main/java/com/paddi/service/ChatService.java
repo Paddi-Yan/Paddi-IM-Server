@@ -1,9 +1,10 @@
 package com.paddi.service;
 
+import com.paddi.entity.vo.ChatHistoryVo;
 import com.paddi.message.PrivateChatMessage;
 import io.netty.channel.Channel;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * @Project: Paddi-IM-Server
@@ -16,5 +17,10 @@ public interface ChatService {
 
     void sendUnreadMessage(Channel channel, Long userId);
 
-    void signMessageAlreadyRead(Map<String, Long> extend);
+    void signMessageAlreadyRead(Long userId, Long friendId);
+
+    List<PrivateChatMessage> getPrivateChatHistory(ChatHistoryVo chatHistoryVo);
+
+    Boolean messageAlreadySend(String sequenceId);
+
 }

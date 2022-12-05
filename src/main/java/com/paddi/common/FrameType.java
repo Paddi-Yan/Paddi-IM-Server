@@ -23,10 +23,13 @@ public enum FrameType {
     FORBIDDEN(13, "用户权限不足,无法使用该功能,请联系管理员后重试"),
     FRIEND_ONLINE(14, "好友上线,更新好友列表"),
     FRIEND_OFFLINE(15, "好友下线,更新好友列表"),
+
+    DUPLICATE_SEND(16, "消息重复发送")
+
     ;
 
-    public final Integer type;
-    public final String description;
+    private final Integer type;
+    private final String description;
 
     FrameType(Integer type, String description) {
         this.type = type;

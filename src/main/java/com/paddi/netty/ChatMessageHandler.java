@@ -116,6 +116,7 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, TextWebSocketFrame msg) {
+//        Frame frame = JSON.parseObject(msg.text(), Frame.class);
         Frame frame = new Gson().fromJson(msg.text(), Frame.class);
         ChatMessageHandler.log.info("接收到消息帧: {}", frame);
         /*ctx.writeAndFlush(
@@ -129,7 +130,8 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
         String sequenceId = frame.getSequenceId();
         Channel senderChannel = ctx.channel();
         Channel receiverChannel = UserChannelManager.getChannel(receiverId);
-        if(FrameType.PRIVATE_CHAT.type.equals(frame.getType())) {
+        ChatService chatService = (ChatService) SpringBeanUtil.getBean(ChatServiceImpl.class);
+        if(FrameType.PRIVATE_CHAT.getType().equals(frame.getType())) {
             //TODO 私聊消息
             ChatMessageHandler.log.info("处理私聊消息->{}",frame);
             //好友关系校验
@@ -139,7 +141,14 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
             }
             Boolean needPersistence = true;
             //TODO 判断消息是否已经发送过
-
+            Boolean checkMessageSend = chatService.messageAlreadySend(sequenceId);
+            //消息已经发送了
+            if(checkMessageSend) {
+                frame.setType(FrameType.DUPLICATE_SEND.getType());
+                frame.setExtend(ImmutableMap.of("cause", "该消息重复发送"));
+                senderChannel.writeAndFlush(new TextWebSocketFrame(new Gson().toJson(frame)));
+                return;
+            }
             //判断对方是否处于在线状态
             if(receiverChannel == null) {
                 //用户处于离线状态->>>应该使用个推\JPush\小米推送等进行消息推送
@@ -161,8 +170,11 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
                                                                .alreadyRead(MessageReadEnum.UNREAD.getStatus()).build();
                 message.setId(sequenceId);
                 messagePersistence(message);
+                //发送未读消息通知给好友
+                chatService.sendUnreadMessage(receiverChannel, receiverId);
             }
-        } else if(FrameType.READ_PRIVATE_MESSAGE.type.equals(frame.getType())) {
+        } else if(FrameType.READ_PRIVATE_MESSAGE.getType().equals(frame.getType())) {
+            //TODO 该功能已弃用
             //TODO 标记私聊消息为已读消息
             //拓展信息Map中必须包含用户ID和好友ID
             Map extend = frame.getExtend();
@@ -170,12 +182,13 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
                     || !extend.containsKey("friendId") || extend.get("userId") == null || extend.get("friendId") == null ) {
                 return;
             }
-            ChatService chatService = (ChatService) SpringBeanUtil.getBean(ChatServiceImpl.class);
             //将该用户与该好友的所有消息标记为已读
-            chatService.signMessageAlreadyRead(extend);
-        } else if(FrameType.GROUP_CHAT.type.equals(frame.getType())) {
+            Long userId = (Long) extend.get("userId");
+            Long friendId = (Long) extend.get("friendId");
+            chatService.signMessageAlreadyRead(userId, friendId);
+        } else if(FrameType.GROUP_CHAT.getType().equals(frame.getType())) {
             //TODO 群聊消息
-        } else if(FrameType.PRIVATE_FILE_MESSAGE.type.equals(frame.getType())) {
+        } else if(FrameType.PRIVATE_FILE_MESSAGE.getType().equals(frame.getType())) {
             //TODO 私信文件传输
             //检查是否是好友关系
             Boolean isFriend = checkRelationShip(frame, senderChannel);
@@ -209,12 +222,12 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
                 message.setId(frame.getSequenceId());
                 messagePersistence(message);
             }
-        } else if(FrameType.KEEPALIVE.type.equals(frame.getType())) {
+        } else if(FrameType.KEEPALIVE.getType().equals(frame.getType())) {
             //TODO 心跳包
-        } else if(FrameType.CLOSE.type.equals(frame.getType())) {
+            log.info("接收到来自用户[{}]的心跳包",frame.getSenderId());
+        } else if(FrameType.CLOSE.getType().equals(frame.getType())) {
             //TODO 关闭连接
             UserChannelManager.remove(senderId);
-            //TODO 向其他好友推送下线消息
         }
     }
 
@@ -253,6 +266,7 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
                     new TextWebSocketFrame(new Gson().toJson(frame)));
             senderChannel.writeAndFlush(
                     new TextWebSocketFrame(new Gson().toJson(senderResponseFrame)));
+
             return true;
         } catch(Exception e) {
             ChatMessageHandler.log.error("消息发送失败,原因: {}", e);

@@ -29,11 +29,11 @@ public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
                 Long userId = null;
                 try {
                     userId = UserChannelManager.remove(channel);
-                    channel.close();
                 } catch(Exception e) {
                     log.warn(e.getMessage());
+                } finally {
+                    channel.close();
                 }
-
                 HeartBeatHandler.log.info("HeartBeatHandler#userEventTriggered userId为{}的用户连接被关闭", userId);
                 HeartBeatHandler.log.info("HeartBeatHandler#userEventTriggered 关闭连接后,当前连接数为：{}", ChatMessageHandler.clients.size());
             }

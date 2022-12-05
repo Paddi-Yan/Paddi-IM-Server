@@ -8,6 +8,7 @@ import com.paddi.common.SearchUserStatusEnum;
 import com.paddi.entity.User;
 import com.paddi.entity.vo.LoginVo;
 import com.paddi.entity.vo.RegisterVo;
+import com.paddi.entity.vo.UpdateUserVo;
 import com.paddi.exception.AuthenticationException;
 import com.paddi.exception.BaseException;
 import com.paddi.exception.RequestParamValidationException;
@@ -138,6 +139,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             userMapper.insert(registerInfo);
             return registerInfo;
         }
+    }
+
+    @Override
+    public User updateUserInfo(UpdateUserVo updateUserVo) {
+        User user = userMapper.selectById(updateUserVo.getId());
+        if(user == null) {
+            throw new RequestParamValidationException();
+        }
+        //根据用户名查询出来的用户信息
+        User checkUser = searchUser(updateUserVo.getUsername());
+        if(checkUser == null) {
+            //全新的用户名
+            //修改用户名
+            user.setUsername(updateUserVo.getUsername());
+            user.setGender(GenderEnum.getGenderEnum(updateUserVo.getGender()).get());
+        } else if(checkUser.getId().equals(updateUserVo.getId())) {
+            //未修改用户名
+            user.setGender(GenderEnum.getGenderEnum(updateUserVo.getGender()).get());
+        } else if(!checkUser.getId().equals(updateUserVo.getId())) {
+            //该用户名已经存在
+            throw new RequestParamValidationException(ImmutableMap.of("username", updateUserVo.getUsername(), "cause", "该用户名已经被使用"));
+        }
+        userMapper.updateById(user);
+        return user;
     }
 
     /**

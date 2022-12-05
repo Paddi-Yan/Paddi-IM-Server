@@ -1,3 +1,6 @@
 spring:
   profiles:
-    active: dev
+    active: pro
+  jackson:
+    generator:
+      write-numbers-as-strings: true

@@ -1,5 +1,6 @@
 package com.paddi.entity.vo;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,6 +18,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @NoArgsConstructor
 @ToString
+@ApiModel(value = "AddFriendRequestVo-添加好友请求对象")
 public class AddFriendRequestVo implements Serializable {
     private static final long serialVersionUID = -341666888507202607L;
 

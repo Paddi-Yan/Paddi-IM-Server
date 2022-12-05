@@ -16,6 +16,15 @@
     </resultMap>
 
     <update id="signMessageAlreadyRead" parameterType="Long">
-        update set is_read = 1 from sys_private_chat_message where send_id = ${friendId} and receiver_id = ${userId};
+        update sys_private_chat_message set is_read = 1 where sender_id = ${friendId} and receiver_id = ${userId};
     </update>
+
+    <select id="getPrivateChatHistory" resultMap="BaseResultMap">
+        select *
+        from (
+                 select id, sender_id, content, send_time, receiver_id, extend_name, extend_size, type from sys_private_chat_message where sender_id = ${userId} and receiver_id = ${friendId}
+                 union all
+                 select id, sender_id, content, send_time, receiver_id, extend_name, extend_size, type from sys_private_chat_message where sender_id = ${friendId} and receiver_id = ${userId}
+             ) result order by send_time DESC
+    </select>
 </mapper>

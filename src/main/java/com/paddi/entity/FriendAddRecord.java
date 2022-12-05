@@ -3,6 +3,7 @@ package com.paddi.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.paddi.common.FriendRequestStatusEnum;
 import lombok.*;
 
 import java.io.Serializable;
@@ -33,7 +34,7 @@ public class FriendAddRecord implements Serializable {
 
     private LocalDateTime handleTime;
 
-    private Boolean accepted;
+    private FriendRequestStatusEnum status;
 
     private String remark;
 

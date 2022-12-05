@@ -7,6 +7,7 @@ import com.paddi.common.SearchUserStatusEnum;
 import com.paddi.entity.User;
 import com.paddi.entity.vo.LoginVo;
 import com.paddi.entity.vo.RegisterVo;
+import com.paddi.entity.vo.UpdateUserVo;
 import com.paddi.entity.vo.UserVo;
 import com.paddi.service.UserService;
 import com.paddi.utils.FileSuffixVerificationUtil;
@@ -101,5 +102,31 @@ public class UserController {
             return Result.fail(HttpStatusCode.ERROR, "头像上传失败");
         }
     }
+
+    @PostMapping("/update")
+    @ResponseBody
+    @ApiOperation("更改用户信息")
+    public Result updateUserInfo(@RequestPart UpdateUserVo updateUserVo, @RequestPart MultipartFile file) {
+        if(updateUserVo.getNeedUpdateProfile()) {
+            try {
+                //更改头像信息
+                String name = file.getOriginalFilename();
+                String suffix = name.substring(name.lastIndexOf(".") + 1);
+                if(!FileSuffixVerificationUtil.isPhoto(suffix)) {
+                    return Result.fail(HttpStatusCode.REQUEST_PARAM_ERROR, "图片后缀不合法,上传头像失败!");
+                }
+                Map<String, String> result = minioUtil.upload(file, profileBucketName);
+                String profile = result.get("fileName");
+                userService.uploadProfile(updateUserVo.getId(), profile);
+            } catch(Exception e) {
+                e.printStackTrace();
+                return Result.fail(HttpStatusCode.ERROR, "头像上传失败");
+            }
+        }
+        User user = userService.updateUserInfo(updateUserVo);
+        UserVo userVo = UserMapStruct.USER_MAPPING.userToUserVo(user);
+        return Result.success(userVo);
+    }
+
 }
 

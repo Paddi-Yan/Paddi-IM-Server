@@ -1,5 +1,6 @@
 package com.paddi.entity.vo;
 
+import io.swagger.annotations.ApiModel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,6 +15,7 @@ import java.io.Serializable;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@ApiModel("LoginVo-用户登录对象")
 public class LoginVo implements Serializable {
     private static final long serialVersionUID = 8470818255372966459L;
 
