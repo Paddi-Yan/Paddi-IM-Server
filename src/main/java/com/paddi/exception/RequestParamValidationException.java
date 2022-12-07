@@ -21,5 +21,4 @@ public class RequestParamValidationException extends BaseException {
     public RequestParamValidationException() {
         super(ErrorCode.REQUEST_VALIDATION_FAILED, null);
     }
-
 }

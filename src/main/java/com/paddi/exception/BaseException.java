@@ -34,6 +34,14 @@ public class BaseException extends RuntimeException {
         }
     }
 
+    public BaseException(ErrorCode error, String message, Map<String, Object> data) {
+        super(message);
+        this.error = error;
+        if(!ObjectUtils.isEmpty(data)) {
+            this.data.putAll(data);
+        }
+    }
+
     public ErrorCode getError() {
         return error;
     }

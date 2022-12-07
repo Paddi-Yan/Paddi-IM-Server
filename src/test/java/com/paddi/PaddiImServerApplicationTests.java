@@ -1,5 +1,6 @@
 package com.paddi;
 
+import cn.hutool.core.lang.UUID;
 import com.paddi.common.GenderEnum;
 import com.paddi.entity.FriendAddRecord;
 import com.paddi.entity.User;
@@ -101,9 +102,8 @@ class PaddiImServerApplicationTests {
     }
 
     public static void main(String[] args) {
-        String name = "js.png";
-        String suffix = name.substring(name.lastIndexOf("."));
-        System.out.println(suffix);
+        System.out.println(UUID.fastUUID().toString(true));
+        System.out.println(UUID.fastUUID().toString(false));
     }
 
     @Resource

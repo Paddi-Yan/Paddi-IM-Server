@@ -19,13 +19,14 @@ public enum FrameType {
     PRIVATE_FILE_MESSAGE(10, "私信文件传输"),
     FRIEND_LIST(11, "好友列表"),
 
+    //TODO 标记消息类型的数据帧已弃用
     READ_PRIVATE_MESSAGE(12, "标记为已读私聊消息"),
     FORBIDDEN(13, "用户权限不足,无法使用该功能,请联系管理员后重试"),
     FRIEND_ONLINE(14, "好友上线,更新好友列表"),
     FRIEND_OFFLINE(15, "好友下线,更新好友列表"),
+    DUPLICATE_SEND(16, "消息重复发送"),
 
-    DUPLICATE_SEND(16, "消息重复发送")
-
+    BATTLE_INVITATION(17, "游戏邀请")
     ;
 
     private final Integer type;
