@@ -58,6 +58,9 @@ public class FriendServiceImpl extends ServiceImpl<FriendMapper, Friend> impleme
     @Override
     public List<User> getFriendList(Long userId) {
         List<Long> friendIdList = friendMapper.searchByUserId(userId);
+        if(friendIdList.isEmpty()) {
+            return null;
+        }
         List<User> friendList = userService.query()
                                            .getBaseMapper()
                                            .selectList(new QueryWrapper<User>().in("id", friendIdList));

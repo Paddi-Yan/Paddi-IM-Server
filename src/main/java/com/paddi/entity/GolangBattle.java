@@ -5,6 +5,7 @@ import com.paddi.entity.vo.UserVo;
 import lombok.*;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @Project: Paddi-IM-Server
@@ -20,7 +21,7 @@ public class GolangBattle implements Serializable {
 
     private static final long serialVersionUID = -8074237961621634472L;
 
-    private static final Integer SIZE = 15;
+    public static final Integer SIZE = 15;
 
     private String id;
 
@@ -32,7 +33,9 @@ public class GolangBattle implements Serializable {
 
     private Long blackPiecesUserId;
 
-    private Integer[] square;
+    private List<Long> readyUserList;
+
+    private int[][] square;
 
     private GolangGameStatus status;
 

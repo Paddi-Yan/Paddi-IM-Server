@@ -172,6 +172,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @return
      */
     private HashMap<String, Object> check(Long id, User user) {
+        User checkUser = userMapper.selectById(id);
+        if(checkUser == null) {
+            throw new RequestParamValidationException(ImmutableMap.of("cause","ID为"+id+"的用户不存在"));
+        }
         HashMap<String, Object> map = new HashMap<>(2);
         Integer status = null;
         //不存在该用户

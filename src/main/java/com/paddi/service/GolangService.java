@@ -1,6 +1,7 @@
 package com.paddi.service;
 
 import com.paddi.entity.GolangBattle;
+import com.paddi.entity.vo.PlayChessRequestVo;
 
 import java.util.Map;
 
@@ -16,4 +17,12 @@ public interface GolangService {
     void invite(Long userId, Long friendId);
 
     Map<String, Object> check(Long userId);
+
+    void handleInvitation(Long userId, Long inviteUserId, Integer handleType);
+
+    void toBeReady(String id, Long userId);
+
+    void playChess(PlayChessRequestVo playChessRequestVo);
+
+    void toBeEnd(Long userId);
 }

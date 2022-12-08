@@ -290,7 +290,6 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        ChatMessageHandler.log.error("连接异常断开,原因:{}", cause.getCause().getMessage());
         ChatMessageHandler.clients.remove(ctx.channel());
     }
 

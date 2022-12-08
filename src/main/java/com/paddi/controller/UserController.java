@@ -54,11 +54,13 @@ public class UserController {
     @ResponseBody
     @PostMapping("/login")
     public Result login(@RequestBody LoginVo loginVo) {
-        return Result.success(userService.login(loginVo.getUsername(), loginVo.getPassword()));
+        User user = userService.login(loginVo.getUsername(), loginVo.getPassword());
+        return Result.success(UserMapStruct.USER_MAPPING.userToUserVo(user));
     }
 
     @ResponseBody
     @PostMapping("/common")
+    @ApiOperation("登录或注册")
     public Result loginOrRegister(@RequestBody LoginVo loginVo) {
         User user = userService.loginOrRegister(loginVo);
         UserVo userVo = UserMapStruct.USER_MAPPING.userToUserVo(user);
@@ -75,6 +77,7 @@ public class UserController {
     public Result searchUser(@RequestParam Long id, @RequestParam String username) {
         HashMap<String, Object> condition = userService.preConditionSearchUser(id, username);
         Integer status = (Integer) condition.get("status");
+        //不存在该用户 || 该用户为自己
         if(SearchUserStatusEnum.USER_NOT_EXIST.status.equals(status)
                 || SearchUserStatusEnum.YOURSELF.status.equals(status)) {
             return Result.success(HttpStatusCode.NO_CONTENT, "查询结果为空");

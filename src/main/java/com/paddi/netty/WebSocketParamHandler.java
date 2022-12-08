@@ -49,7 +49,6 @@ public class WebSocketParamHandler extends SimpleChannelInboundHandler<FullHttpR
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        WebSocketParamHandler.log.error("WebSocketParamHandler.exceptionCaught发生异常：{}",cause);
         ctx.close();
     }
 }

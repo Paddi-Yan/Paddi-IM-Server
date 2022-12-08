@@ -25,4 +25,12 @@ public enum GolangPiecesType {
                 ", type='" + type + '\'' +
                 '}';
     }
+
+    public Integer getCode() {
+        return code;
+    }
+
+    public String getType() {
+        return type;
+    }
 }

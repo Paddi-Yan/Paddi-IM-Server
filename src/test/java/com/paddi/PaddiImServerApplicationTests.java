@@ -1,6 +1,5 @@
 package com.paddi;
 
-import cn.hutool.core.lang.UUID;
 import com.paddi.common.GenderEnum;
 import com.paddi.entity.FriendAddRecord;
 import com.paddi.entity.User;
@@ -102,8 +101,10 @@ class PaddiImServerApplicationTests {
     }
 
     public static void main(String[] args) {
-        System.out.println(UUID.fastUUID().toString(true));
-        System.out.println(UUID.fastUUID().toString(false));
+        int[] ints = new int[2];
+        for(int anInt : ints) {
+            System.out.println(anInt);
+        }
     }
 
     @Resource
