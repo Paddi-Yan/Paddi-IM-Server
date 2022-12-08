@@ -1,8 +1,10 @@
 package com.paddi.service;
 
 import com.paddi.entity.vo.ChatHistoryVo;
+import com.paddi.entity.vo.MessageVo;
 import com.paddi.message.PrivateChatMessage;
 import io.netty.channel.Channel;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -23,4 +25,7 @@ public interface ChatService {
 
     Boolean messageAlreadySend(String sequenceId);
 
+    void sendPrivateChatMessage(MessageVo messageVo);
+
+    void transferFile(MessageVo messageVo, MultipartFile file);
 }
