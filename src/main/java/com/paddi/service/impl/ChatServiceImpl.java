@@ -21,6 +21,7 @@ import com.paddi.service.UserService;
 import com.paddi.utils.MinioUtil;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +42,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @Transactional(rollbackFor = BaseException.class)
+@Slf4j
 public class ChatServiceImpl implements ChatService {
 
     @Resource
@@ -129,8 +131,10 @@ public class ChatServiceImpl implements ChatService {
                                .type(FrameType.PRIVATE_CHAT.getType())
                                .build();
             //推送私信
-            UserChannelManager.getChannel(receiverId)
-                              .writeAndFlush(new Gson().toJson(frame));
+            Channel friendChannel = UserChannelManager.getChannel(receiverId);
+            friendChannel.writeAndFlush(new TextWebSocketFrame(new Gson().toJson(frame)));
+            //推送未读消息
+            sendUnreadMessage(friendChannel, receiverId);
         }
         //持久化消息
         PrivateChatMessage message = PrivateChatMessage.builder()
@@ -175,7 +179,8 @@ public class ChatServiceImpl implements ChatService {
                                .type(FrameType.PRIVATE_FILE_MESSAGE.getType())
                                .extend(transferResult)
                                .build();
-            receiverChannel.writeAndFlush(new Gson().toJson(frame));
+            receiverChannel.writeAndFlush(new TextWebSocketFrame(new Gson().toJson(frame)));
+            sendUnreadMessage(receiverChannel, receiverId);
         }
         //持久化消息
         PrivateChatMessage message = PrivateChatMessage.builder()
@@ -199,7 +204,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     private void checkUserExist(Long senderId, Long receiverId) {
-        if(checkUserExist(senderId) && checkUserExist(receiverId)) {
+        if(!checkUserExist(senderId) || !checkUserExist(receiverId)) {
             throw new RequestParamValidationException(ImmutableMap.of("cause", "用户ID不存在"));
         }
     }
