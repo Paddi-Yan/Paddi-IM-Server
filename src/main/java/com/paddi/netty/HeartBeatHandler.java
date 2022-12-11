@@ -24,7 +24,7 @@ public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
                 //HeartBeatHandler.log.info("HeartBeatHandler#userEventTriggered 进入了写空闲");
             } else if(event.state() == IdleState.ALL_IDLE) {
                 HeartBeatHandler.log.info("HeartBeatHandler#userEventTriggered 进入了读写空闲,即将关闭连接....");
-                HeartBeatHandler.log.info("HeartBeatHandler#userEventTriggered 关闭连接前,当前连接数为：{}", ChatMessageHandler.clients.size());
+                HeartBeatHandler.log.info("HeartBeatHandler#userEventTriggered 关闭连接前,当前连接数UserChannelManager.size()：{}", UserChannelManager.size());
                 Channel channel = ctx.channel();
                 Long userId = null;
                 try {
@@ -35,7 +35,7 @@ public class HeartBeatHandler extends ChannelInboundHandlerAdapter {
                     channel.close();
                 }
                 HeartBeatHandler.log.info("HeartBeatHandler#userEventTriggered userId为{}的用户连接被关闭", userId);
-                HeartBeatHandler.log.info("HeartBeatHandler#userEventTriggered 关闭连接后,当前连接数为：{}", ChatMessageHandler.clients.size());
+                HeartBeatHandler.log.info("HeartBeatHandler#userEventTriggered 关闭连接前,当前连接数UserChannelManager.size()：{}", UserChannelManager.size());
             }
         }
     }

@@ -149,8 +149,6 @@ public class ChatServiceImpl implements ChatService {
         privateChatMapper.insert(message);
     }
 
-
-
     @Override
     public void transferFile(MessageVo messageVo, MultipartFile file) {
         if(file == null || file.isEmpty()) {

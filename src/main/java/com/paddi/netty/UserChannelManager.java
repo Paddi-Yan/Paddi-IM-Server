@@ -41,27 +41,32 @@ public class UserChannelManager {
     }
 
     public static void remove(Long senderId) {
-        print();
         Channel channel = UserChannelManager.USER_CHANNEL_MAP.remove(senderId);
         if(channel == null) {
             return;
         }
+        log.info("UserChannelManager#remove-移除连接用户{}与服务器的连接{}",senderId, channel);
         UserChannelManager.CHANNEL_USER_MAP.remove(channel);
+        print();
     }
 
     public static Long remove(Channel channel) throws Exception {
-        print();
         Long senderId = UserChannelManager.CHANNEL_USER_MAP.remove(channel);
         if(senderId == null) {
             throw new Exception("移除用户绑定连接失败");
         }
         UserChannelManager.USER_CHANNEL_MAP.remove(senderId);
-        log.info("移除连接用户{}与服务器的连接{}",senderId, channel);
+        log.info("UserChannelManager#remove-移除连接用户{}与服务器的连接{}",senderId, channel);
+        print();
         return senderId;
     }
 
     public static Boolean contains(Long userId) {
         return USER_CHANNEL_MAP.containsKey(userId);
+    }
+
+    public static Integer size() {
+        return USER_CHANNEL_MAP.size();
     }
 
     private static void print() {

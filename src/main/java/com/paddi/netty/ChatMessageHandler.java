@@ -19,12 +19,9 @@ import com.paddi.service.impl.UserServiceImpl;
 import com.paddi.utils.SpringBeanUtil;
 import com.paddi.utils.mapstruct.UserMapStruct;
 import io.netty.channel.*;
-import io.netty.channel.group.ChannelGroup;
-import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.util.AttributeKey;
-import io.netty.util.concurrent.GlobalEventExecutor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
@@ -39,7 +36,7 @@ import java.util.*;
 @ChannelHandler.Sharable
 public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
 
-    public static ChannelGroup clients = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+    //public static ChannelGroup clients = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
@@ -66,13 +63,8 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
                 ctx.channel().closeFuture().sync();
                 return;
             }
-            ChatMessageHandler.log.info("ChatMessageHandler.userEventTriggered：获取到创建连接用户ID: {}",userId);
+            ChatMessageHandler.log.info("ChatMessageHandler#userEventTriggered：获取到创建连接用户ID: {}",userId);
             UserChannelManager.put(userId, ctx.channel());
-            if(UserChannelManager.getChannel(userId) != null) {
-                ChatMessageHandler.log.info("ChatMessageHandler.userEventTriggered：userId为{}的用户连接成功",userId);
-            } else {
-                ctx.close();
-            }
             //TODO 连接建立成功查询并返回未读消息
             ChatService chatService = (ChatService) SpringBeanUtil.getBean(ChatServiceImpl.class);
             chatService.sendUnreadMessage(ctx.channel(), userId);
@@ -228,6 +220,7 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
         } else if(FrameType.CLOSE.getType().equals(frame.getType())) {
             //TODO 关闭连接
             UserChannelManager.remove(senderId);
+            ctx.close();
         }
     }
 
@@ -289,13 +282,18 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        ChatMessageHandler.clients.remove(ctx.channel());
+    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+        //ChatMessageHandler.clients.add(ctx.channel());
+
     }
 
     @Override
-    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-        ChatMessageHandler.clients.add(ctx.channel());
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        //ChatMessageHandler.clients.remove(ctx.channel());
+        Long userId = UserChannelManager.remove(ctx.channel());
+        log.error("ChatMessageHandler#exceptionCaught: 发生错误,用户[{}]连接强制断开,连接管理器移除连接", userId);
+        ctx.channel().close();
+        sendOffLineMessage(userId);
     }
 
     @Override
@@ -303,6 +301,13 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
         AttributeKey<Object> attributeKey = AttributeKey.valueOf("userId");
         Long userId = Long.valueOf(ctx.attr(attributeKey).get().toString());
         log.info("ChatMessageHandler#handlerRemoved: 用户[{}]连接断开,连接管理器移除连接", userId);
+        //ChatMessageHandler.clients.remove(ctx.channel());
+        UserChannelManager.remove(ctx.channel());
+        ctx.channel().close();
+        sendOffLineMessage(userId);
+    }
+
+    private static void sendOffLineMessage(Long userId) {
         UserService userService = (UserService) SpringBeanUtil.getBean(UserServiceImpl.class);
         User user = userService.getBaseMapper().selectById(userId);
         FriendService friendService = (FriendService) SpringBeanUtil.getBean(FriendServiceImpl.class);
@@ -323,6 +328,6 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
                 channel.writeAndFlush(new TextWebSocketFrame(new Gson().toJson(offLinedFriendInfo)));
             }
         }
-        ChatMessageHandler.clients.remove(ctx.channel());
     }
+
 }
