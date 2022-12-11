@@ -112,6 +112,8 @@ public class ChatServiceImpl implements ChatService {
         Long senderId = messageVo.getSenderId();
         Long receiverId = messageVo.getReceiverId();
         checkUserExist(senderId, receiverId);
+        //检查发送方是否在线
+        checkUserOnline(messageVo.getSenderId());
         //检查是否是好友关系
         checkRelationShip(senderId, receiverId);
         //消息体不能为空串
@@ -149,6 +151,13 @@ public class ChatServiceImpl implements ChatService {
         privateChatMapper.insert(message);
     }
 
+    private void checkUserOnline(Long senderId) {
+        Boolean isOnline = UserChannelManager.contains(senderId);
+        if(!isOnline) {
+            throw new BadRequestException(ImmutableMap.of("cause", "UserId为[" + senderId + "]的发送方用户未上线,无法发送消息"));
+        }
+    }
+
     @Override
     public void transferFile(MessageVo messageVo, MultipartFile file) {
         if(file == null || file.isEmpty()) {
@@ -157,6 +166,7 @@ public class ChatServiceImpl implements ChatService {
         Long senderId = messageVo.getSenderId();
         Long receiverId = messageVo.getReceiverId();
         checkUserExist(senderId, receiverId);
+        checkUserOnline(senderId);
         checkRelationShip(senderId, receiverId);
         Map<String, String> transferResult;
         try {
