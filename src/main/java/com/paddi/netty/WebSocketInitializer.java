@@ -22,6 +22,8 @@ public class WebSocketInitializer extends ChannelInitializer<SocketChannel> {
 
     private ChatMessageHandler chatMessageHandler = new ChatMessageHandler();
 
+    private ExceptionHandler exceptionHandler = new ExceptionHandler();
+
     @Override
     protected void initChannel(SocketChannel ch) throws Exception {
         ChannelPipeline pipeline = ch.pipeline();
@@ -44,6 +46,7 @@ public class WebSocketInitializer extends ChannelInitializer<SocketChannel> {
         pipeline.addLast(webSocketParamHandler);
         pipeline.addLast(new WebSocketServerProtocolHandler("/ws"));
         pipeline.addLast(chatMessageHandler);
+        pipeline.addLast(exceptionHandler);
 
     }
 }

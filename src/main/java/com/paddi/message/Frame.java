@@ -1,7 +1,5 @@
 package com.paddi.message;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
@@ -26,13 +24,11 @@ public class Frame implements Serializable {
     @ApiModelProperty("消息序列号")
     private String sequenceId;
 
-    @JsonSerialize(using = ToStringSerializer.class)
-    private Long senderId;
+    private String senderId;
 
     private String content;
 
-    @JsonSerialize(using = ToStringSerializer.class)
-    private Long receiverId;
+    private String receiverId;
 
     private Integer type;
 

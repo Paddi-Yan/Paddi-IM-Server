@@ -7,9 +7,9 @@ import com.paddi.common.MessageReadEnum;
 import com.paddi.common.MessageType;
 import com.paddi.common.SearchUserStatusEnum;
 import com.paddi.entity.User;
-import com.paddi.entity.vo.UserVo;
 import com.paddi.message.Frame;
 import com.paddi.message.PrivateChatMessage;
+import com.paddi.message.UserInfo;
 import com.paddi.service.ChatService;
 import com.paddi.service.FriendService;
 import com.paddi.service.UserService;
@@ -25,7 +25,10 @@ import io.netty.util.AttributeKey;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @Project: Paddi-IM-Server
@@ -49,7 +52,7 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
             UserService userService = (UserService) SpringBeanUtil.getBean(UserServiceImpl.class);
             User user = userService.getBaseMapper().selectById(userId);
             if(user == null || !user.getEnabled()) {
-                Frame failResponseFrame = Frame.builder().senderId(userId)
+                Frame failResponseFrame = Frame.builder().senderId(userId.toString())
                                    .type(FrameType.FORBIDDEN.getType())
                                    .extend(ImmutableMap.of("cause", "用户不存在或者未开放权限"))
                                    .build();
@@ -67,37 +70,39 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
             UserChannelManager.put(userId, ctx.channel());
             //TODO 连接建立成功查询并返回未读消息
             ChatService chatService = (ChatService) SpringBeanUtil.getBean(ChatServiceImpl.class);
-            chatService.sendUnreadMessage(ctx.channel(), userId);
+            Map<String, Integer> friendToCount = chatService.getUnreadMessageCount(userId);
             //TODO 返回当前在线和不在线的好友列表
             FriendService friendService = (FriendService) SpringBeanUtil.getBean(FriendServiceImpl.class);
-            List<UserVo> allFriendList = UserMapStruct.USER_MAPPING.userListToUserVoList(friendService.getFriendList(userId));
-            List<UserVo> onlineFriendList = new ArrayList<>();
-            List<UserVo> notOnlineFriendList = new ArrayList<>();
-            Iterator<UserVo> iterator = allFriendList.iterator();
-            UserVo userVo = UserMapStruct.USER_MAPPING.userToUserVo(user);
+            List<User> allFriendList = friendService.getFriendList(userId);
+            HashMap<String, UserInfo> onlineFriendMap = new HashMap<>();
+            HashMap<String, UserInfo> notOnlineFriendMap = new HashMap<>();
+            Iterator<User> iterator = allFriendList.iterator();
+            UserInfo userInfo = UserMapStruct.USER_MAPPING.userToUserInfo(user);
             Frame onLinedFriendInfo = Frame.builder()
                                            .type(FrameType.FRIEND_ONLINE.getType())
-                                           .senderId(userId)
-                                           .extend(ImmutableMap.of("onLinedFriendInfo", userVo))
+                                           .senderId(userId.toString())
+                                           .extend(ImmutableMap.of("onLinedFriendInfo", userInfo))
                                            .build();
             while(iterator.hasNext()) {
-                UserVo friendVo = iterator.next();
+                User friend = iterator.next();
                 //筛选不在线的好友
-                if(UserChannelManager.contains(friendVo.getId())) {
+                UserInfo friendInfo = UserMapStruct.USER_MAPPING.userToUserInfo(friend);
+                friendInfo.setUnreadCount(friendToCount.getOrDefault(friendInfo.getId(), 0));
+                if(UserChannelManager.contains(friend.getId())) {
                     //在线
-                    onlineFriendList.add(friendVo);
+                    onlineFriendMap.put(friend.getId().toString(), friendInfo);
                     //TODO 向好友推送上线消息-更新好友的在线好友列表和不在线的好友列表
-                    Channel channel = UserChannelManager.getChannel(friendVo.getId());
-                    onLinedFriendInfo.setReceiverId(friendVo.getId());
+                    Channel channel = UserChannelManager.getChannel(friend.getId());
+                    onLinedFriendInfo.setReceiverId(friend.getId().toString());
                     channel.writeAndFlush(new TextWebSocketFrame(new Gson().toJson(onLinedFriendInfo)));
                 }else {
                     //不在线
-                    notOnlineFriendList.add(friendVo);
+                    notOnlineFriendMap.put(friend.getId().toString(), friendInfo);
                 }
             }
-            HashMap<String, List> friendList = new HashMap<>(2);
-            friendList.put("online", onlineFriendList);
-            friendList.put("notOnline", notOnlineFriendList);
+            HashMap<String, HashMap<String, UserInfo>> friendList = new HashMap<>(2);
+            friendList.put("online", onlineFriendMap);
+            friendList.put("notOnline", notOnlineFriendMap);
             Frame frame = Frame.builder().extend(friendList).type(FrameType.FRIEND_LIST.getType()).build();
             ctx.channel().writeAndFlush(new TextWebSocketFrame(
                     new Gson().toJson(frame)
@@ -115,8 +120,8 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
                 new TextWebSocketFrame(
                         "[服务器]在" + LocalDateTime.now()
                                 + "接收到消息: " + msg.text()));*/
-        Long senderId = frame.getSenderId();
-        Long receiverId = frame.getReceiverId();
+        Long senderId = Long.valueOf(frame.getSenderId());
+        Long receiverId = Long.valueOf(frame.getReceiverId());
         String content = frame.getContent();
         LocalDateTime sendTime = LocalDateTime.now();
         String sequenceId = frame.getSequenceId();
@@ -225,8 +230,8 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
     }
 
     private static Boolean checkRelationShip(Frame frame, Channel senderChannel) {
-        Long senderId = frame.getSenderId();
-        Long receiverId = frame.getReceiverId();
+        Long senderId = Long.valueOf(frame.getSenderId());
+        Long receiverId = Long.valueOf(frame.getReceiverId());
         String sequenceId = frame.getSequenceId();
         String content = frame.getContent();
         UserService userService = (UserService) SpringBeanUtil.getBean(UserServiceImpl.class);
@@ -236,7 +241,7 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
         if(!SearchUserStatusEnum.ALREADY_FRIENDS.status.equals(status)) {
             //非好友关系
             senderChannel.writeAndFlush(new TextWebSocketFrame(
-                    new Gson().toJson(new Frame(sequenceId, senderId, content, receiverId, FrameType.AUTHORIZATION_WARNING_MESSAGE.getType(), null))
+                    new Gson().toJson(new Frame(sequenceId, senderId.toString(), content, receiverId.toString(), FrameType.AUTHORIZATION_WARNING_MESSAGE.getType(), null))
             ));
             return false;
         }
@@ -244,16 +249,16 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
     }
 
     private static Boolean sendPrivateMessage(Frame frame, Channel senderChannel, Channel receiverChannel) {
-        Long senderId = frame.getSenderId();
-        Long receiverId = frame.getSenderId();
+        Long senderId = Long.valueOf(frame.getSenderId());
+        Long receiverId = Long.valueOf(frame.getSenderId());
         String content = frame.getContent();
         String sequenceId = frame.getSequenceId();
         try {
             Frame senderResponseFrame = Frame.builder()
                                              .sequenceId(sequenceId)
                                              .type(FrameType.PRIVATE_CHAT_SUCCESS_RESPONSE.getType())
-                                             .senderId(senderId)
-                                             .receiverId(receiverId)
+                                             .senderId(senderId.toString())
+                                             .receiverId(receiverId.toString())
                                              .extend(frame.getExtend()).build();
             receiverChannel.writeAndFlush(
                     new TextWebSocketFrame(new Gson().toJson(frame)));
@@ -267,8 +272,8 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
             Frame senderResponseFrame = Frame.builder()
                                              .sequenceId(sequenceId)
                                              .type(FrameType.PRIVATE_CHAT_FAIL_RESPONSE.getType())
-                                             .senderId(senderId)
-                                             .receiverId(receiverId).build();
+                                             .senderId(senderId.toString())
+                                             .receiverId(receiverId.toString()).build();
             senderChannel.writeAndFlush(
                     new TextWebSocketFrame(new Gson().toJson(senderResponseFrame))
             );
@@ -288,15 +293,6 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        //ChatMessageHandler.clients.remove(ctx.channel());
-        Long userId = UserChannelManager.remove(ctx.channel());
-        log.error("ChatMessageHandler#exceptionCaught: 发生错误,用户[{}]连接强制断开,连接管理器移除连接", userId);
-        ctx.channel().close();
-        sendOffLineMessage(userId);
-    }
-
-    @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
         AttributeKey<Object> attributeKey = AttributeKey.valueOf("userId");
         Long userId = Long.valueOf(ctx.attr(attributeKey).get().toString());
@@ -313,10 +309,10 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
         FriendService friendService = (FriendService) SpringBeanUtil.getBean(FriendServiceImpl.class);
         List<User> allFriendList = friendService.getFriendList(userId);
         Iterator<User> iterator = allFriendList.iterator();
-        UserVo userVo = UserMapStruct.USER_MAPPING.userToUserVo(user);
+        UserInfo userInfo = UserMapStruct.USER_MAPPING.userToUserInfo(user);
         Frame offLinedFriendInfo = Frame.builder().type(FrameType.FRIEND_OFFLINE.getType())
-                                        .senderId(userId)
-                                        .extend(ImmutableMap.of("offLinedFriendInfo", userVo))
+                                        .senderId(userId.toString())
+                                        .extend(ImmutableMap.of("offLinedFriendInfo", userInfo))
                                         .build();
         //TODO 向好友推送下线消息
         while(iterator.hasNext()) {
@@ -324,7 +320,7 @@ public class ChatMessageHandler extends SimpleChannelInboundHandler<TextWebSocke
             //好友在线即进行推送更新
             if(UserChannelManager.contains(friend.getId())) {
                 Channel channel = UserChannelManager.getChannel(friend.getId());
-                offLinedFriendInfo.setReceiverId(friend.getId());
+                offLinedFriendInfo.setReceiverId(friend.getId().toString());
                 channel.writeAndFlush(new TextWebSocketFrame(new Gson().toJson(offLinedFriendInfo)));
             }
         }
