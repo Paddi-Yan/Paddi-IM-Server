@@ -27,4 +27,13 @@
                  select id, sender_id, content, send_time, receiver_id, extend_name, extend_size, type from sys_private_chat_message where sender_id = ${friendId} and receiver_id = ${userId}
              ) result order by send_time DESC
     </select>
+
+    <resultMap id="UnreadMessageCountMap" type="com.paddi.entity.FriendToCount">
+        <result column="sender_id" property="friendId"/>
+        <result column="unread_message_count" property="unreadMessageCount"/>
+    </resultMap>
+
+    <select id="getUnreadMessageCount" resultMap="UnreadMessageCountMap" >
+        select sender_id, count(*) as unread_message_count from sys_private_chat_message where receiver_id = ${receiverId} and is_read = 0 group by sender_id;
+    </select>
 </mapper>

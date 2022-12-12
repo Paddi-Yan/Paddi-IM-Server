@@ -7,6 +7,7 @@ import io.netty.channel.Channel;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Project: Paddi-IM-Server
@@ -18,6 +19,8 @@ public interface ChatService {
     PrivateChatMessage sendPrivateMessage(PrivateChatMessage message);
 
     void sendUnreadMessage(Channel channel, Long userId);
+
+    Map<String, Integer> getUnreadMessageCount(Long userId);
 
     void signMessageAlreadyRead(Long userId, Long friendId);
 

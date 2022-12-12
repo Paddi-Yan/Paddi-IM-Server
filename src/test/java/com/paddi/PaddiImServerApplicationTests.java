@@ -19,7 +19,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SpringBootTest
 class PaddiImServerApplicationTests {
@@ -101,13 +104,55 @@ class PaddiImServerApplicationTests {
     }
 
     public static void main(String[] args) {
-        int[] ints = new int[2];
-        for(int anInt : ints) {
-            System.out.println(anInt);
+        //type = 8
+        HashMap<String, Integer> friendIdToCount = new HashMap<>();
+        ArrayList<Friend> onlineFriendList = new ArrayList<>();
+        ArrayList<Friend> notOnlineFriendList = new ArrayList<>();
+        for(Map.Entry<String, Integer> entry : friendIdToCount.entrySet()) {
+            String friendId = entry.getKey();
+
+            Integer unreadMessageCount = entry.getValue();
+            //遍历在线好友列表
+            for(Friend friend : onlineFriendList) {
+                if(friend.getId().equals(friendId)) {
+                    friend.setCount(unreadMessageCount);
+                    break;
+                }
+            }
+
+
+            //遍历离线好友列表
+            for(Friend friend : notOnlineFriendList) {
+                if(friend.getId().equals(friendId)) {
+                    friend.setCount(unreadMessageCount);
+                }
+            }
+        }
+    }
+    private class Friend {
+        private Long id;
+        private Integer count;
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public Integer getCount() {
+            return count;
+        }
+
+        public void setCount(Integer count) {
+            this.count = count;
         }
     }
 
+
     @Resource
     private MinioUtil minioUtil;
+
 
 }

@@ -1,5 +1,7 @@
 package com.paddi.entity.vo;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -24,9 +26,11 @@ public class ChatHistoryVo implements Serializable {
     private static final long serialVersionUID = 1104333245670956109L;
 
     @ApiModelProperty(value = "用户ID")
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long userId;
 
     @ApiModelProperty(value = "好友ID或者群聊ID")
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long anotherId;
 
     @ApiModelProperty(value = "当前页数")

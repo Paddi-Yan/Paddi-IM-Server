@@ -2,6 +2,8 @@ package com.paddi.message;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 
@@ -22,12 +24,14 @@ public class PrivateChatMessage extends AbstractMessage {
 
     private static final long serialVersionUID = 7235415216025984925L;
 
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long senderId;
 
     private String content;
 
     private LocalDateTime sendTime;
 
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long receiverId;
 
     @TableField(value = "is_read")

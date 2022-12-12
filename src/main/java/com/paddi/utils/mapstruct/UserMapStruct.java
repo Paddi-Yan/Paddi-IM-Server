@@ -2,6 +2,7 @@ package com.paddi.utils.mapstruct;
 
 import com.paddi.entity.User;
 import com.paddi.entity.vo.UserVo;
+import com.paddi.message.UserInfo;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
@@ -21,4 +22,10 @@ public interface UserMapStruct {
     UserVo userToUserVo(User user);
 
     List<UserVo> userListToUserVoList(List<User> users);
+
+    @Mapping(target = "id", expression = "java(user.getId().toString())")
+    UserInfo userToUserInfo(User user);
+
+    @Mapping(target = "id", expression = "java(userVo.getId().toString())")
+    UserInfo userToUserInfo(UserVo userVo);
 }

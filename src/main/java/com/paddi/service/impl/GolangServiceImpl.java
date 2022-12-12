@@ -85,7 +85,7 @@ public class GolangServiceImpl implements GolangService {
         Channel friendChannel = UserChannelManager.getChannel(friendId);
         Frame invitationFrame = Frame.builder()
                            .type(FrameType.BATTLE_INVITATION.getType()).content("您的好友"+user.getUsername()+"向您发起游戏邀请")
-                           .extend(ImmutableMap.of("user", UserMapStruct.USER_MAPPING.userToUserVo(user)))
+                           .extend(ImmutableMap.of("user", UserMapStruct.USER_MAPPING.userToUserInfo(user)))
                            .build();
         friendChannel.writeAndFlush(new TextWebSocketFrame(new Gson().toJson(invitationFrame)));
     }

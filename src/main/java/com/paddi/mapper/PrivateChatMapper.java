@@ -2,6 +2,7 @@ package com.paddi.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.paddi.entity.FriendToCount;
 import com.paddi.message.PrivateChatMessage;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -18,4 +19,6 @@ public interface PrivateChatMapper extends BaseMapper<PrivateChatMessage> {
     void signMessageAlreadyRead(@Param("userId") Long userId, @Param("friendId") Long friendId);
 
     List<PrivateChatMessage> getPrivateChatHistory(Page<PrivateChatMessage> page,@Param("userId") Long userId,@Param("friendId") Long friendId);
+
+    List<FriendToCount> getUnreadMessageCount(Long receiverId);
 }

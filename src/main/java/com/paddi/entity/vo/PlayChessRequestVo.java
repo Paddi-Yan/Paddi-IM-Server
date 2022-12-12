@@ -1,5 +1,7 @@
 package com.paddi.entity.vo;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -22,6 +24,7 @@ import java.io.Serializable;
 public class PlayChessRequestVo implements Serializable {
     private static final long serialVersionUID = 925956443262324852L;
 
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long userId;
 
     private Integer m;

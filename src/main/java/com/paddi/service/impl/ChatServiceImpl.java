@@ -1,7 +1,6 @@
 package com.paddi.service.impl;
 
 import cn.hutool.core.lang.UUID;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
@@ -9,6 +8,7 @@ import com.paddi.common.FrameType;
 import com.paddi.common.MessageReadEnum;
 import com.paddi.common.MessageType;
 import com.paddi.common.SearchUserStatusEnum;
+import com.paddi.entity.FriendToCount;
 import com.paddi.entity.vo.ChatHistoryVo;
 import com.paddi.entity.vo.MessageVo;
 import com.paddi.exception.*;
@@ -65,19 +65,22 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public void sendUnreadMessage(Channel channel, Long userId) {
-        List<PrivateChatMessage> messageList = privateChatMapper.selectList(new QueryWrapper<PrivateChatMessage>()
-                .eq("receiver_id", userId).eq("is_read", MessageReadEnum.UNREAD.getStatus())
-                .orderByDesc("send_time"));
-        if(!messageList.isEmpty()) {
-            /*Map<Long, List<PrivateChatMessage>> messageMap = messageList.stream()
-                                                               .collect(Collectors.groupingBy(PrivateChatMessage::getSenderId));*/
-            Map<Long, Long> messageMap = messageList.stream()
-                                                 .collect(Collectors.groupingBy(PrivateChatMessage :: getSenderId, Collectors.counting()));
-            Frame frame = Frame.builder().receiverId(userId).type(FrameType.UNREAD_PRIVATE_MESSAGE.getType())
-                               .extend(messageMap).build();
+        Map<String, Integer> friendToUnreadCount = getUnreadMessageCount(userId);
+        if(!friendToUnreadCount.isEmpty()) {
+            Frame frame = Frame.builder().receiverId(userId.toString()).type(FrameType.UNREAD_PRIVATE_MESSAGE.getType())
+                               .extend(friendToUnreadCount).build();
             channel.writeAndFlush(new TextWebSocketFrame(new Gson().toJson(frame)));
         }
     }
+
+    @Override
+    public Map<String, Integer> getUnreadMessageCount(Long userId) {
+        List<FriendToCount> friendToCountList = privateChatMapper.getUnreadMessageCount(userId);
+        Map<String, Integer> map = friendToCountList.stream()
+                                                      .collect(Collectors.toMap(friendToCount -> String.valueOf(friendToCount.getFriendId()), FriendToCount::getUnreadMessageCount));
+        return map;
+    }
+
 
     @Override
     public void signMessageAlreadyRead(Long userId, Long friendId) {
@@ -127,9 +130,9 @@ public class ChatServiceImpl implements ChatService {
         if(UserChannelManager.contains(receiverId)) {
             Frame frame = Frame.builder()
                                .sequenceId(id)
-                               .senderId(senderId)
+                               .senderId(senderId.toString())
                                .content(content)
-                               .receiverId(receiverId)
+                               .receiverId(receiverId.toString())
                                .type(FrameType.PRIVATE_CHAT.getType())
                                .build();
             //推送私信
@@ -182,8 +185,8 @@ public class ChatServiceImpl implements ChatService {
             Channel receiverChannel = UserChannelManager.getChannel(receiverId);
             Frame frame = Frame.builder()
                                .sequenceId(id)
-                               .senderId(senderId)
-                               .receiverId(receiverId)
+                               .senderId(senderId.toString())
+                               .receiverId(receiverId.toString())
                                .type(FrameType.PRIVATE_FILE_MESSAGE.getType())
                                .extend(transferResult)
                                .build();
